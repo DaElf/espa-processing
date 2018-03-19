@@ -1107,7 +1107,10 @@ class LandsatProcessor(CDRProcessor):
         l1_source_files = [
             'L*.TIF',
             'README.GTF',
-            '*gap_mask*'
+            '*gap_mask*',
+            'L*_GCP.txt',
+            'L*_VER.jpg',
+            'L*_VER.txt',
         ]
 
         # Change to the working directory
