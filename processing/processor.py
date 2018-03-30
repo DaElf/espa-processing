@@ -1107,7 +1107,10 @@ class LandsatProcessor(CDRProcessor):
         l1_source_files = [
             'L*.TIF',
             'README.GTF',
-            '*gap_mask*'
+            '*gap_mask*',
+            'L*_GCP.txt',
+            'L*_VER.jpg',
+            'L*_VER.txt',
         ]
 
         # Change to the working directory
@@ -1558,7 +1561,7 @@ class PlotProcessor(ProductProcessor):
                                                'LT05*_sr_band5.stats']),
                           SearchInfo(L7_NAME, ['LE7*_sr_band5.stats',
                                                'LE07*_sr_band5.stats']),
-                          SearchInfo(L8_NAME, ['LC8*_sr_band6.stats'
+                          SearchInfo(L8_NAME, ['LC8*_sr_band6.stats',
                                                'LC08*_sr_band6.stats']),
                           SearchInfo(TERRA_NAME, ['MOD*sur_refl_b06*.stats']),
                           SearchInfo(AQUA_NAME, ['MYD*sur_refl_b06*.stats'])]
