@@ -27,7 +27,7 @@ class CliException(Exception):
         self.fmt = '{}'
         self.value = value
 
-        super(CliException).__init__(self.fmt.format(self.value))
+        super(CliException, self).__init__(self.fmt.format(self.value))
 
     def __str__(self):
         return repr(self.fmt.format(self.value))
@@ -37,9 +37,9 @@ class CliError(CliException):
     """Exception for missing AEA arguments"""
 
     def __init__(self, value):
-        super(CliError).__init__(self.fmt.format(self.value))
         self.fmt = '{}'
         self.value = value
+        super(CliError, self).__init__(self.fmt.format(self.value))
 
 
 def build_command_line_parser():
@@ -422,9 +422,9 @@ class BadTemplateError(CliException):
     """Exception for bad template files"""
 
     def __init__(self, value):
-        super(BadTemplateError).__init__(self.fmt.format(self.value))
         self.fmt = 'Error loading order template file [{}]'
         self.value = value
+        super(BadTemplateError, self).__init__(self.fmt.format(self.value))
 
 
 def load_template(filename):
@@ -452,9 +452,9 @@ class MissingExtentError(CliException):
     """Exception for missing extents"""
 
     def __init__(self, value):
-        super(MissingExtentError).__init__(self.fmt.format(self.value))
         self.fmt = 'Must specify {} when specifying extents'
         self.value = value
+        super(MissingExtentError, self).__init__(self.fmt.format(self.value))
 
 
 def check_for_extents(args):
@@ -499,9 +499,9 @@ class MissingSinuError(CliException):
     """Exception for missing SINU arguments"""
 
     def __init__(self, value):
-        super(MissingSinuError).__init__(self.fmt.format(self.value))
         self.fmt = 'Must specify {} for sinu projection'
         self.value = value
+        super(MissingSinuError, self).__init__(self.fmt.format(self.value))
 
 
 def check_projection_sinu(args):
@@ -536,9 +536,9 @@ class MissingAeaError(CliException):
     """Exception for missing AEA arguments"""
 
     def __init__(self, value):
-        super(MissingAeaError).__init__(self.fmt.format(self.value))
         self.fmt = 'Must specify {} for aea projection'
         self.value = value
+        super(MissingAeaError, self).__init__(self.fmt.format(self.value))
 
 
 def check_projection_aea(args):
@@ -585,9 +585,9 @@ class MissingUtmError(CliException):
     """Exception for missing UTM arguments"""
 
     def __init__(self, value):
-        super(MissingUtmError).__init__(self.fmt.format(self.value))
         self.fmt = 'Must specify {} for utm projection'
         self.value = value
+        super(MissingUtmError, self).__init__(self.fmt.format(self.value))
 
 
 def check_projection_utm(args):
@@ -619,9 +619,9 @@ class MissingPsError(CliException):
     """Exception for missing PS arguments"""
 
     def __init__(self, value):
-        super(MissingPsError).__init__(self.fmt.format(self.value))
         self.fmt = 'Must specify {} for ps projection'
         self.value = value
+        super(MissingPsError, self).__init__(self.fmt.format(self.value))
 
 
 def check_projection_ps(args):
