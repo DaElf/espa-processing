@@ -15,10 +15,9 @@ import config_utils as config
 from logging_tools import EspaLogging
 import processor
 
+from . import __version__
 
-APP_NAME = 'ESPA-Processing'
-VERSION = '2.23.0.1'
-TEMPLATE_FILENAME = '/usr/local/share/espa/order_template.json'
+TEMPLATE_FILENAME = 'order_template.json'
 
 
 class CliException(Exception):
@@ -55,7 +54,7 @@ def build_command_line_parser():
 
     parser.add_argument('--version',
                         action='version',
-                        version=' '.join([APP_NAME, VERSION]))
+                        version=__version__)
 
     # ------------------------------------------------------------------------
     specific = parser.add_argument_group('order specifics')
