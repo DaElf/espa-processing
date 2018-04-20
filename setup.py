@@ -16,7 +16,7 @@ setup(name='espa-processing',
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: Public Domain',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 2.7',
       ],
       keywords='usgs eros lsrd espa',
       url='http://github.com/usgs-eros/espa-processing',
