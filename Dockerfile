@@ -5,8 +5,8 @@ FROM jbrinkmann/lagoon-water-dragon:devel-2.3.0.0 as application
 RUN useradd espadev
 WORKDIR /home/espadev/espa-processing
 COPY setup.py version.txt README.md /home/espadev/espa-processing/
-RUN pip install --trusted-host=pypi.python.org --no-cache-dir --upgrade pip \
-    && pip install --trusted-host=pypi.python.org --no-cache-dir -e .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -e .
 
 COPY ./processing/ /home/espadev/espa-processing/processing/
 COPY ./run/ /home/espadev/espa-processing/run/
@@ -21,13 +21,14 @@ EXPOSE 8303 8304 8305
 ENTRYPOINT ["uwsgi", "run/uwsgi.ini"]
 
 # ==========+ Unit testing dependencies +==========
-FROM python:3.6-slim  as tester
+FROM python:2.7-slim  as tester
+RUN apt-get update && apt-get install -y gcc
 
 WORKDIR /home/espadev/espa-processing
 COPY --from=application /home/espadev/espa-processing /home/espadev/espa-processing/
-COPY --from=application /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
+COPY --from=application /usr/lib/python2.7/site-packages /usr/lib/python2.7/site-packages
 
-RUN pip install --trusted-host=pypi.python.org -e .[test]
+RUN pip install -e .[test]
 COPY ./test/ ./test/
 #    pylint --rcfile=.pylintrc api -f parseable -r n && \
 #    mypy --silent-imports api && \
