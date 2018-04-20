@@ -22,13 +22,15 @@ ENTRYPOINT ["uwsgi", "run/uwsgi.ini"]
 
 # ==========+ Unit testing dependencies +==========
 FROM python:2.7-slim  as tester
-RUN apt-get update && apt-get install -y gcc
+RUN apt-get update && apt-get install -y gcc git
 
 WORKDIR /home/espadev/espa-processing
 COPY --from=application /home/espadev/espa-processing /home/espadev/espa-processing/
 COPY --from=application /usr/lib/python2.7/site-packages /usr/lib/python2.7/site-packages
+COPY --from=application  /usr/lib64/python2.7/site-packages  /usr/lib64/python2.7/site-packages
 
-RUN pip install -e .[test]
+RUN pip install -e .[test] \
+    && pip install --no-cache-dir --upgrade git+https://github.com/USGS-EROS/espa-python-library.git@v1.1.0#espa
 COPY ./test/ ./test/
 #    pylint --rcfile=.pylintrc api -f parseable -r n && \
 #    mypy --silent-imports api && \
