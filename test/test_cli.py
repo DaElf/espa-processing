@@ -6,7 +6,7 @@ import unittest
 from argparse import ArgumentParser
 
 
-import cli
+from processing import cli
 
 
 class TestCLI(unittest.TestCase):

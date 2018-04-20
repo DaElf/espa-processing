@@ -1,5 +1,0 @@
-[run]
-branch  = True
-source  = .
-omit    = test-orders/*
-          unittests/*

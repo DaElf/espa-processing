@@ -5,7 +5,7 @@ import os
 import unittest
 from cStringIO import StringIO
 
-import sensor
+from processing import sensor
 
 
 class TestSensor(unittest.TestCase):
