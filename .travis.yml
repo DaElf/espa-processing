@@ -1,0 +1,41 @@
+language: python
+python:
+- '3.6'
+services: docker
+sudo: required
+env:
+  global:
+  - ESPA_PROCESSING_ENV=dev
+  - ESPA_PROCESSING_CONFIG_PATH=${TRAVIS_BUILD_DIR}/run/config.ini
+install:
+- pip install -e .
+- pip install -e .[test]
+- pip install codecov
+script:
+- "pytest --cov=./"
+after_success:
+- codecov
+deploy:
+  - provider: script
+    script: make docker-deploy
+    on:
+      branch:
+        - master
+        - devel
+notifications:
+  email:
+    on_success: never
+    on_failure: change
+
+before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
+before_install:
+  # Load cached docker images
+  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
+cache:
+  bundler: true
+  directories:
+    - $HOME/docker
