@@ -1,10 +1,8 @@
-# lagoon-emperor-penguin [![GitHub release][gb]][gr] [![Docker Pulls][db]][dh]
-
 **PROVISIONAL SOFTWARE DISCLAIMER**: This software is preliminary and is subject to revision.
 
 ⚠️ The develop branch is not considered stable and can contain bugs or not build at all, use at your own risk.
 
-[![Build Status][tb]][tt] [![Codecov branch][cb]][cc]
+[![Build Status][tb]][tt] [![Codecov branch][cb]][cc] [![Docker Pulls][db]][dh] [![GitHub release][gb]][gr]
 
 [tb]: https://img.shields.io/travis/jakebrinkmann/lagoon-emperor-penguin/devel.svg?style=flat-square
 [tt]: https://travis-ci.org/jakebrinkmann/lagoon-emperor-penguin
