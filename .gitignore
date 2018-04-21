@@ -5,6 +5,9 @@
 .project
 .pydevproject
 
+# VSCode
+.vscode
+
 # Python compiled files
 *.py[cod]
 
