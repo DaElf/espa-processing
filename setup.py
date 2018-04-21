@@ -32,6 +32,10 @@ setup(name='espa-processing',
           'marshmallow>=3.0.0b8',
           'addict',
           'python-dateutil',
+          'espa-python-library==1.1.0',
+      ],
+      dependency_links=[
+          'git+https://github.com/USGS-EROS/espa-python-library.git@v1.1.0#egg=espa-python-library-1.1.0',
       ],
       # List additional groups of dependencies here (e.g. development
       # dependencies). You can install these using the following syntax,

@@ -6,7 +6,7 @@ RUN useradd espadev
 WORKDIR /home/espadev/espa-processing
 COPY setup.py version.txt README.md /home/espadev/espa-processing/
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -e .
+    && pip install --no-cache-dir --process-dependency-links -e .
 
 COPY ./processing/ /home/espadev/espa-processing/processing/
 COPY ./run/ /home/espadev/espa-processing/run/
@@ -29,8 +29,7 @@ COPY --from=application /home/espadev/espa-processing /home/espadev/espa-process
 COPY --from=application /usr/lib/python2.7/site-packages /usr/lib/python2.7/site-packages
 COPY --from=application  /usr/lib64/python2.7/site-packages  /usr/lib64/python2.7/site-packages
 
-RUN pip install -e .[test] \
-    && pip install --no-cache-dir --upgrade git+https://github.com/USGS-EROS/espa-python-library.git@v1.1.0#espa
+RUN pip install --no-cache-dir --process-dependency-links -e .[test]
 COPY ./test/ ./test/
 #    pylint --rcfile=.pylintrc api -f parseable -r n && \
 #    mypy --silent-imports api && \
