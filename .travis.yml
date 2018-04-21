@@ -8,7 +8,7 @@ env:
   - ESPA_PROCESSING_ENV=dev
   - ESPA_PROCESSING_CONFIG_PATH=${TRAVIS_BUILD_DIR}/run/config.ini
 install:
-- pip install -e .
+- pip install --process-dependency-links -e .
 - pip install -e .[test]
 - pip install codecov
 script:
