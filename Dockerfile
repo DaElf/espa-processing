@@ -13,8 +13,8 @@ COPY ./run/ /home/espadev/espa-processing/run/
 
 RUN mkdir -p /var/log/uwsgi \
     && chown -R espadev:espadev /var/log/uwsgi
-ENV ESPA_PROCESSING_CONFIG_PATH=/home/espadev/espa-processing/run/config.ini \
-    ESPA_PROCESSING_ENV="dev"
+ENV ESPA_PROC_CONFIG_PATH=/home/espadev/espa-processing/run/config.ini \
+    ESPA_PROC_ENV="dev"
 
 USER espadev
 EXPOSE 8303 8304 8305

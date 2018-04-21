@@ -5,8 +5,8 @@ services: docker
 sudo: required
 env:
   global:
-  - ESPA_PROCESSING_ENV=dev
-  - ESPA_PROCESSING_CONFIG_PATH=${TRAVIS_BUILD_DIR}/run/config.ini
+  - ESPA_PROC_ENV=dev
+  - ESPA_PROC_CONFIG_PATH=${TRAVIS_BUILD_DIR}/run/config.ini
 install:
 - pip install --process-dependency-links -e .
 - pip install -e .[test]
