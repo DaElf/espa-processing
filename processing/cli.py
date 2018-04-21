@@ -9,9 +9,9 @@ import json
 from argparse import ArgumentParser
 
 
+import cfg
 import settings
 import utilities as util
-import config_utils as config
 from logging_tools import EspaLogging
 import processor
 
