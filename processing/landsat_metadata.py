@@ -8,11 +8,10 @@ License: NASA Open Source Agreement 1.3
 import os
 import shutil
 import glob
+import logging
 from cStringIO import StringIO
 
 import settings
-from logging_tools import EspaLogging
-from espa_exception import ESPAException
 
 
 def fix_file(filename):
@@ -67,36 +66,17 @@ def get_filename(work_dir, product_id):
 
     The file may have issues, so call the fix function to remove those issues.
     """
-
-    logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
-
-    filename = ''
-
-    # Save the current directory and change to the work directory
-    current_directory = os.getcwd()
-    os.chdir(work_dir)
-
     try:
-        for meta_file in glob.glob('{0}_MTL.*'.format(product_id)):
-            if ('old' not in meta_file and
-                    not meta_file.startswith('lnd')):
+        parser = lambda x: 'old' not in x and not x.startswith('lnd')
+        filename = filter(parser, glob.glob('{0}_MTL.*'.format(product_id))).pop()
 
-                # Save the filename and break out of the directory loop
-                filename = meta_file
-                break
-
-        if filename == '':
-            raise ESPAException('Unable to locate the MTL file in [{0}]'
-                                .format(work_dir))
-
-        logger.info('Located MTL file: [{0}]'.format(filename))
+        logging.debug('Located MTL file: [{0}]'.format(filename))
 
         filename = fix_file(filename)
 
-        logger.info('Using MTL file: [{0}]'.format(filename))
+        logging.info('Using MTL file: [{0}]'.format(filename))
 
-    finally:
-        # Change back to the original directory
-        os.chdir(current_directory)
+    except IndexError:
+        raise IOError('Unable to locate the MTL file in [{0}]'.format(work_dir))
 
     return filename
