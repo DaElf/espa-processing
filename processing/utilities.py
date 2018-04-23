@@ -6,11 +6,7 @@ import sys
 import errno
 import datetime
 import shlex
-try:
-    import resource
-except:
-    resource = None
-
+import resource
 import logging
 import subprocess
 from collections import defaultdict
