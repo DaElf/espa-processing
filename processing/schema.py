@@ -3,7 +3,10 @@ import datetime
 
 from marshmallow import Schema, fields, pre_load, validate, ValidationError
 
+import sensor
 
+
+VALID_PRODUCT_TYPES = ['landsat', 'modis']
 VALID_OUTPUT_FORMATS = ['envi', 'gtiff', 'hdf-eos2', 'netcdf']
 VALID_RESAMPLE_METHODS = ['near', 'bilinear', 'cubic', 'cubicspline',
                           'lanczos']
@@ -73,30 +76,27 @@ class AeaProjectionOptsSchema(Schema):
 
 class AvailableProductsSchema(Schema):
     """ Supported options for processing """
-    include_cfmask = False
-    include_customized_source_data = False
-    include_dswe = False
-    include_lst = False
-    include_source_data = False
-    include_source_metadata = False
-    include_sr = False
-    include_sr_evi = False
-    include_sr_msavi = False
-    include_sr_nbr = False
-    include_sr_nbr2 = False
-    include_sr_ndmi = False
-    include_sr_ndvi = False
-    include_sr_savi = False
-    include_sr_thermal = False
-    include_sr_toa = False
-    include_statistics = False
+    customization = fields.Nested(CustomizationOptsSchema)
+    extents = fields.Nested(ClipSchema)
+    projection = fields.Nested((
+        AeaProjectionOptsSchema,
+        SinuProjectionOptsSchema,
+        UtmProjectionOptsSchema,
+        PsProjectionOptsSchema,
+        LatlonProjectionOptsSchema,
+    ))
+
+
+class SupportedSensorsField(fields.String):
+    """ Ensures support for the produt id supplied """
+    def _deserialize(self, value, attr, data):
+        _ = sensor.info(value)
+        return super()._deserialize(value, attr, data)
 
 
 class ProcessingRequestSchema(Schema):
-    bridge_mode = False
-    download_url = "DOWNLOAD_URL"
-    espa_api = "skip_api"
+    download_url = fields.String(validate=validate.URL())
     options = fields.Nested(AvailableProductsSchema)
-    orderid = "ORDER_ID"
-    product_type = "PRODUCT_TYPE"
-    scene = "SCENE_ID"
+    orderid = fields.String()
+    product_type = fields.String(validate=validate.ContainsOnly(VALID_PRODUCT_TYPES))
+    scene = SupportedSensorsField()
