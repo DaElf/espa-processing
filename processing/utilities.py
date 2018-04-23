@@ -1,37 +1,42 @@
 
-'''
-Description: Utility module for espa-processing.
-
-License: NASA Open Source Agreement 1.3
-'''
+""" Host system utilities for espa-processing """
 
 import os
+import sys
 import errno
 import datetime
-import commands
-import random
-import resource
+import shlex
+try:
+    import resource
+except:
+    resource = None
+
+import logging
+import subprocess
 from collections import defaultdict
 
 
-def date_from_year_doy(year, doy):
-    """Returns a python date object given a year and day of year
+DATE_FMT = r'%Y-%m-%d %H:%M:%S'
+LOG_LINE_FORMAT = (
+    '%(asctime)s.%(msecs)03d %(process)d %(levelname)-8s '
+    '%(filename)s:%(lineno)d:%(funcName)s -- %(message)s'
+)
+
+
+def configure_base_logger(stream='stdout', format=LOG_LINE_FORMAT,
+                          datefmt=DATE_FMT, level='INFO'):
+    """ Configures the base logger to an output stream
 
     Args:
-        year (int/str): The 4-digit year for the date.
-        doy (int/str): The day of year for the date.
-
-    Returns:
-        date (date): A date repesenting the given year and day of year.
+        stream (str): The name of the output stream (stderr/stdout)
+        format (str): The formatting to use withiin the log lines
+        datefmt (str): The format for the date strings
+        level (str): The base level of errors to log to the handler
     """
-
-    d = datetime.date(int(year), 1, 1) + datetime.timedelta(int(doy) - 1)
-
-    if int(d.year) != int(year):
-        raise Exception('doy [{}] must fall within the specified year [{}]'
-                        .format(doy, year))
-    else:
-        return d
+    logging.basicConfig(stream=getattr(sys, stream.lower()),
+                        format=format,
+                        datefmt=datefmt,
+                        level=getattr(logging, level.upper()))
 
 
 def peak_memory_usage(this=False):
@@ -70,96 +75,81 @@ def current_disk_usage(pathname):
     return dirs_dict[pathname]
 
 
+def snapshot_resources(log=True):
+    """ Delivers (to logger) a current resource snapshot in JSON format
+
+    Args:
+        log (bool): flag to log resources to logging
+
+    Returns:
+        dict: resource usage
+    """
+    resources = {
+        'current_disk_usage': current_disk_usage(os.getcwd()),
+        'peak_memory_usage': peak_memory_usage()
+    }
+    if log:
+        logging.warning('Resources: {}'.format(resources))
+    return resources
+
+
+def watch_stdout(cmd):
+    """ Combine stdout/stderr, read output in real time, return execution results
+
+    Args:
+        cmd (list): command and arguments to execute
+
+    Returns:
+        dict: exit status code and text output stream from stdout
+    """
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
+    output = []
+    for line in iter(process.stdout.readline, b''):
+        logging.debug(line.strip())
+        output.append(line.strip())
+        if process.poll() is not None:
+            break
+    process.stdout.close()
+    process.wait()
+    return {
+        'status': process.returncode,
+        'output': '\n'.join(output)
+    }
+
+
 def execute_cmd(cmd):
-    """Execute a system command line
+    """ Execute a system command line call, raise error on non-zero exit codes
 
     Args:
         cmd (str): The command line to execute.
 
     Returns:
-        output (str): The stdout and/or stderr from the executed command.
-
-    Raises:
-        Exception(message)
+        dict: exit status code and text output stream from stdout
     """
 
-    output = ''
-    (status, output) = commands.getstatusoutput(cmd)
+    cparts = cmd
+    if isinstance(cmd, str):
+        cparts = shlex.split(cmd)
+    results = watch_stdout(cmd)
 
     message = ''
-    if status < 0:
+    if results['status'] < 0:
         message = 'Application terminated by signal [{}]'.format(cmd)
 
-    if status != 0:
+    if results['status'] != 0:
         message = 'Application failed to execute [{}]'.format(cmd)
 
-    if os.WEXITSTATUS(status) != 0:
+    if os.WEXITSTATUS(results['status']) != 0:
         message = ('Application [{}] returned error code [{}]'
-                   .format(cmd, os.WEXITSTATUS(status)))
+                   .format(cmd, os.WEXITSTATUS(results['status'])))
 
     if len(message) > 0:
-        if len(output) > 0:
+        if len(results['output']) > 0:
             # Add the output to the exception message
-            message = ' Stdout/Stderr is: '.join([message, output])
+            message = ' Stdout/Stderr is: '.join([message, results['output']])
         raise Exception(message)
 
-    return output
-
-
-def get_cache_hostname(host_names):
-    """Poor mans load balancer for accessing the online cache over the private
-       network
-
-    Returns:
-        hostname (str): The name of the host to use.
-
-    Raises:
-        Exception(message)
-    """
-
-    host_list = list(host_names)
-
-    def check_host_status(hostname):
-        """Check to see if the host is reachable
-
-        Args:
-            hostname (str): The hostname to check.
-
-        Returns:
-            result (bool): True if the host was reachable and False if not.
-        """
-
-        cmd = 'ping -q -c 1 {}'.format(hostname)
-
-        try:
-            execute_cmd(cmd)
-        except Exception:
-            return False
-        return True
-
-    def get_hostname():
-        """Recursivly select a host and check to see if it is available
-
-        Returns:
-            hostname (str): The name of the host to use.
-
-        Raises:
-            Exception(message)
-        """
-
-        hostname = random.choice(host_list)
-        if check_host_status(hostname):
-            return hostname
-        else:
-            for x in host_list:
-                if x == hostname:
-                    host_list.remove(x)
-            if len(host_list) > 0:
-                return get_hostname()
-            else:
-                raise Exception('No online cache hosts available...')
-
-    return get_hostname()
+    return results
 
 
 def create_directory(directory):
@@ -206,71 +196,38 @@ def create_link(src_path, link_path):
             raise
 
 
-def tar_files(tarred_full_path, file_list, gzip=False):
-    """Create a tar ball (*.tar or *.tar.gz) of the specified file(s)
+def untar_cmd(src, dest):
+    """ Create the tar commandline call
 
     Args:
-        tarred_full_path (str): The full path to the tarred filename.
-        file_list (list): The files to tar as a list.
-        gzip (bool): Whether or not to gzip the tar on the fly.
+        src (str): relative or full path to source tar file
+        dest (str): full path to output directory
 
     Returns:
-        target (str): The full path to the tarred/gzipped filename.
+        str: the tar command ready for execution
 
-    Raises:
-        Exception(message)
+    Examples:
+        >>> untar_cmd('my.tar.gz', '/path/to/place')
+        'tar --directory /path/to/place -xvf my.tar.gz'
     """
+    return ' '.join(['tar', '--directory', dest, '-xvf', src])
 
-    flags = '-cf'
-    target = '%s.tar' % tarred_full_path
 
-    # If zipping was chosen, change the flags and the target name
-    if gzip:
-        flags = '-czf'
-        target = '%s.tar.gz' % tarred_full_path
+def untar_data(source_file, destination_directory):
+    '''
+    Description:
+        Using tar extract the file contents into a destination directory.
 
-    cmd = ['tar', flags, target]
-    cmd.extend(file_list)
-    cmd = ' '.join(cmd)
+    Notes:
+        Works with '*.tar.gz' and '*.tar' files.
+    '''
+    logging.info("Unpacking [%s] to [%s]",
+                 source_file, destination_directory)
 
+    # Unpack the data and raise any errors
     output = ''
     try:
-        output = execute_cmd(cmd)
+        output = execute_cmd(untar_cmd(source_file, destination_directory))
     except Exception:
-        msg = "Error encountered tar'ing file(s): Stdout/Stderr:"
-        if len(output) > 0:
-            msg = ' '.join([msg, output])
-        else:
-            msg = ' '.join([msg, 'NO STDOUT/STDERR'])
-        # Raise and retain the callstack
-        raise Exception(msg)
-
-    return target
-
-
-def gzip_files(file_list):
-    """Create a gzip for each of the specified file(s).
-
-    Args:
-        file_list (list): The files to tar as a list.
-
-    Raises:
-        Exception(message)
-    """
-
-    # Force the gzip file to overwrite any previously existing attempt
-    cmd = ['gzip', '--force']
-    cmd.extend(file_list)
-    cmd = ' '.join(cmd)
-
-    output = ''
-    try:
-        output = execute_cmd(cmd)
-    except Exception:
-        msg = 'Error encountered compressing file(s): Stdout/Stderr:'
-        if len(output) > 0:
-            msg = ' '.join([msg, output])
-        else:
-            msg = ' '.join([msg, 'NO STDOUT/STDERR'])
-        # Raise and retain the callstack
-        raise Exception(msg)
+        logging.exception("Failed to unpack data")
+        raise
