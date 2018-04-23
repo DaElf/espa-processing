@@ -91,12 +91,13 @@ class SupportedSensorsField(fields.String):
     """ Ensures support for the produt id supplied """
     def _deserialize(self, value, attr, data):
         _ = sensor.info(value)
-        return super()._deserialize(value, attr, data)
+        return super(SupportedSensorsField, self)._deserialize(value, attr, data)
 
+class MetadataSchema(Schema):
+    orderid = fields.String(required=True)
 
 class ProcessingRequestSchema(Schema):
-    download_url = fields.String(validate=validate.URL())
-    options = fields.Nested(AvailableProductsSchema)
-    orderid = fields.String()
-    product_type = fields.String(validate=validate.ContainsOnly(VALID_PRODUCT_TYPES))
-    scene = SupportedSensorsField()
+    options = fields.Nested(AvailableProductsSchema, required=True)
+    metadata = fields.Nested(MetadataSchema, required=True)
+    input_name = SupportedSensorsField(required=True)
+    input_urls = fields.List(fields.String(validate=validate.URL()), required=True)
