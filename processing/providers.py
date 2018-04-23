@@ -1,18 +1,24 @@
 """ Abstraction for interfacing with providers.yml """
 
+import os
+from glob import glob
+
 import yaml
 
 
-def read_yaml(filename='processing/providers.yaml'):
-    """ Parse a YAML file from filesystem
+def read_yaml(filepath='processing', match='*.yaml'):
+    """ Parse all YAML files from directory on filesystem
 
     Args:
-        filename (str): relative path to providers yaml
+        filepath (str): relative path to providers yaml store
 
     Returns:
         dict: serialized data from file
     """
-    return yaml.load(open(filename))
+    return dict([(x,y)
+                for fp in glob(os.path.join(filepath, match))
+                for x,y in yaml.load(open(fp)).items()]
+                )
 
 
 def make_cmd(entity):
