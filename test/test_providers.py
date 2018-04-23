@@ -19,6 +19,12 @@ def test_find_product():
     assert mock_providers == providers.find_product('thing', mock_providers)
 
 
+def test_fetch_requires():
+    p = {'cook': {'requires': ['grocery']}}
+    ps = {'grocery': {'cmd': 'go_to_market'}}
+    expected = [{'cmd': 'go_to_market'}]
+    assert expected == providers.fetch_requires(p, ps)
+
 def test_lpgs_to_espa(pid=LT04_TEST_ID):
     product = 'espa_landsat'
     cmd = 'lpgs_to_espa --mtl {}.mtl;'.format(pid)

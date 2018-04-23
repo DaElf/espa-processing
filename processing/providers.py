@@ -49,6 +49,25 @@ def find_product(product, providers):
             if product in description.get('products')}
 
 
+def fetch_requires(provider, providers):
+    """ Finds the sub-providers required by current provider
+
+    Args:
+        provider (dict): current provider subset from providers
+        providers (dict): serialized provider descriptions
+
+    Returns:
+        list: ordered requirement entities
+
+    Example:
+        >>> p = {'cook': {'requires': ['grocery']}}
+        >>> ps = {'grocery': {'cmd': 'go_to_market'}}
+        >>> fetch_requires(p, ps)
+        [{'cmd': 'go_to_market'}]
+    """
+    return [providers.get(x) for x in provider.values()[0].get('requires')]
+
+
 def sequence(product, input_id):
     a = read_yaml()
     p = find_product(product, a)
