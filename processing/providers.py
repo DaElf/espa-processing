@@ -21,11 +21,12 @@ def read_yaml(filepath='processing', match='*.yaml'):
                 )
 
 
-def make_cmd(entity):
+def make_cmd(entity, extras=None):
     """ Convert YAML entry into commandline call
 
     Args:
         entity (dict): The serialzied represntation of command
+        extras (dict): format values to insert into arg calls
 
     Returns:
         str: The formatted string
@@ -34,7 +35,8 @@ def make_cmd(entity):
         >>> make_cmd({"cmd": "echo", "args": "hello"})
         'echo hello'
     """
-    return '{cmd} {args}'.format(**entity)
+    args = ' '.join('{} {}'.format(x, y.format(**extras)) for z in entity.get('args', []) for x, y in z.items())
+    return '{cmd} {args}'.format(args=args, cmd=entity['cmd']) if 'cmd' in entity else ''
 
 
 def find_product(product, providers):
@@ -86,6 +88,9 @@ def fetch_requires(requires, providers):
             for x in pull_reqs(requires)] for y in z ]
 
 
-def sequence(product, input_id):
-    a = read_yaml()
+def sequence(product, provider_path='processing/', **kwargs):
+    # TODO: docstring
+    a = read_yaml(provider_path)
     p = find_product(product, a)
+    r = fetch_requires(p, a)
+    return '; '.join(filter(None, [make_cmd(e, kwargs) for e in r] + [make_cmd(p.values()[0], kwargs)]))
