@@ -71,14 +71,19 @@ def fetch_requires(requires, providers):
         >>> fetch_requires(p, ps)
         [{'cmd': 'go_to_market'}]
     """
-    if isinstance(requires, dict):
-        requires = requires.values()[0].get('requires')
-    return [y for z in [
-        fetch_requires(providers.get(x).get('requires'), providers)
-        + [{k:v for k, v in providers.get(x).items() if k != 'requires'}]
-            if isinstance(providers.get(x).get('requires'), list)
-                else [providers.get(x)]
-            for x in requires] for y in z ]
+    strip_reqs = lambda x: {k: v for k, v in x.items() if k != 'requires'}
+    def pull_reqs(r):
+        if isinstance(r, dict):
+            return r.values()[0].get('requires')
+        return r
+
+    def recur_reqs(x, providers):
+        if isinstance(x.get('requires'), list):
+            return fetch_requires(x.get('requires'), providers) + [strip_reqs(x)]
+        return [x]
+
+    return [y for z in [recur_reqs(providers.get(x), providers)
+            for x in pull_reqs(requires)] for y in z ]
 
 
 def sequence(product, input_id):
