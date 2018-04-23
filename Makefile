@@ -31,6 +31,7 @@ docker-deploy: debug build tag push
 clean:
 	@find . -name '*.pyc' -delete
 	@find . -name '__pycache__' -delete
+	@find . -name '.pytest_cache' -exec rm -rv {} +
 
 test: clean
 	@docker build --target tester -f Dockerfile -t $(COMMIT_TAG) --rm=true --compress $(PWD)
