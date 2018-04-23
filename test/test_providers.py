@@ -33,6 +33,13 @@ def test_fetch_requires():
     expected = [{'cmd': 'go_to_market'}]
     assert expected == providers.fetch_requires(p, ps)
 
+def test_fetch_requires_nested():
+    p = {'cook': {'requires': ['grocery']}}
+    ps = {'grocery': {'cmd': 'go_to_market', 'requires': ['car']},
+          'car': {'cmd': 'buy_car'}}
+    expected = [{'cmd': 'buy_car'}, {'cmd': 'go_to_market'}]
+    assert expected == providers.fetch_requires(p, ps)
+
 def test_lpgs_to_espa(pid=LT04_TEST_ID):
     product = 'espa_landsat'
     cmd = 'lpgs_to_espa --mtl {}.mtl;'.format(pid)

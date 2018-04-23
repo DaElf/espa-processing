@@ -1,4 +1,4 @@
-""" Abstraction for interfacing with providers.yml """
+""" Graph for command sequence of a product from providers yaml """
 
 import os
 from glob import glob
@@ -52,14 +52,14 @@ def find_product(product, providers):
         {'i1': {'products': ['thing']}}
     """
     return {name: description for name, description in providers.items()
-            if product in description.get('products')}
+            if product in description.get('products', [])}
 
 
-def fetch_requires(provider, providers):
-    """ Finds the sub-providers required by current provider
+def fetch_requires(requires, providers):
+    """ Finds the sub-providers required by current provider as adjacency list
 
     Args:
-        provider (dict): current provider subset from providers
+        requires (list): list of requirements to extract
         providers (dict): serialized provider descriptions
 
     Returns:
@@ -71,7 +71,14 @@ def fetch_requires(provider, providers):
         >>> fetch_requires(p, ps)
         [{'cmd': 'go_to_market'}]
     """
-    return [providers.get(x) for x in provider.values()[0].get('requires')]
+    if isinstance(requires, dict):
+        requires = requires.values()[0].get('requires')
+    return [y for z in [
+        fetch_requires(providers.get(x).get('requires'), providers)
+        + [{k:v for k, v in providers.get(x).items() if k != 'requires'}]
+            if isinstance(providers.get(x).get('requires'), list)
+                else [providers.get(x)]
+            for x in requires] for y in z ]
 
 
 def sequence(product, input_id):
