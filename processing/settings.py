@@ -40,11 +40,6 @@ DEG_FOR_15_METERS = (DEG_FOR_30_METERS / 2.0)
 DEG_FOR_1_METER = (DEG_FOR_30_METERS / 30.0)
 
 # Supported datums - the strings for them
-WGS84 = 'WGS84'
-NAD27 = 'NAD27'
-NAD83 = 'NAD83'
-# WGS84 should always be first in the list
-VALID_DATUMS = [WGS84, NAD27, NAD83]
 
 TRANSFER_BLOCK_SIZE = 10485760
 

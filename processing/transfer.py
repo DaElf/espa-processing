@@ -15,7 +15,6 @@ from time import sleep
 
 import settings
 import utilities
-from logging_tools import EspaLogging
 
 
 def copy_files_to_directory(source_files, destination_directory):

@@ -9,97 +9,43 @@ License: NASA Open Source Agreement 1.3
 import os
 import sys
 import glob
+import shutil
+import logging
 
+import cfg
 import settings
 import utilities
-from logging_tools import EspaLogging
-from environment import Environment, DISTRIBUTION_METHOD_LOCAL
 import transfer
 
 
-def untar_data(source_file, destination_directory):
-    '''
-    Description:
-        Using tar extract the file contents into a destination directory.
+def dirs_to_make(base_work_dir, directories=['output', 'stage', 'work']):
+    """ Convert a base path and subfolders to list of absolute paths to make
 
-    Notes:
-        Works with '*.tar.gz' and '*.tar' files.
-    '''
+    Args:
+        base_work_dir (str): relative or absolute path to base working directory
+        directories (list): all subfolders to create undir base dir
 
-    logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
-
-    # If both source and destination are localhost we can just copy the data
-    cmd = ' '.join(['tar', '--directory', destination_directory,
-                    '-xvf', source_file])
-
-    logger.info("Unpacking [%s] to [%s]"
-                % (source_file, destination_directory))
-
-    # Unpack the data and raise any errors
-    output = ''
-    try:
-        output = utilities.execute_cmd(cmd)
-    except Exception:
-        logger.exception("Failed to unpack data")
-        raise
-    finally:
-        if len(output) > 0:
-            logger.info(output)
+    Returns:
+        list: the fully joined paths to all subdirs
+    """
+    base_work_dir = os.path.abspath(base_work_dir)
+    return [os.path.join(base_work_dir, f) for f in directories]
 
 
-def stage_local_statistics_data(output_dir, work_dir, order_id):
-    '''
-    Description:
-        Stages the statistics using a local directory path.
-    '''
+def initialize_processing_directory(base_work_dir, directories=['output', 'stage', 'work']):
+    """ Initializes the processing directory and subfolders
 
-    cache_dir = os.path.join(output_dir, settings.ESPA_LOCAL_CACHE_DIRECTORY)
-    cache_dir = os.path.join(cache_dir, order_id)
-    cache_dir = os.path.join(cache_dir, 'stats')
-    cache_files = os.path.join(cache_dir, '*')
+    Args:
+        base_work_dir (str): relative or absolute path to base working directory
+        directories (list): all subfolders to create undir base dir
+    """
+    if os.path.exists(base_work_dir):
+        logging.warning('Removing processing directory: %s', base_work_dir)
+        shutil.rmtree(base_work_dir, ignore_errors=True)
 
-    stats_files = glob.glob(cache_files)
+    logging.info('Create processing directory: %s', base_work_dir)
+    utilities.create_directory(base_work_dir)
 
-    transfer.copy_files_to_directory(stats_files, work_dir)
-
-
-def stage_remote_statistics_data(stage_dir, work_dir, order_id):
-    '''
-    Description:
-        Stages the statistics using scp from a remote location.
-    '''
-
-    env = Environment()
-
-    cache_host = utilities.get_cache_hostname(env.get_cache_host_list())
-    cache_dir = os.path.join(settings.ESPA_REMOTE_CACHE_DIRECTORY, order_id)
-    cache_dir = os.path.join(cache_dir, 'stats')
-
-    # Transfer the directory using scp
-    transfer.scp_transfer_directory(cache_host, cache_dir,
-                                    'localhost', stage_dir)
-
-    # Move the staged data to the work directory
-    stats_files = glob.glob(os.path.join(stage_dir, 'stats/*'))
-
-    transfer.move_files_to_directory(stats_files, work_dir)
-
-
-def stage_statistics_data(output_dir, stage_dir, work_dir, parms):
-    '''
-    Description:
-        Stages the statistics data, either by using scp from a remote location,
-        or by just copying them from a local disk path.
-    '''
-
-    env = Environment()
-
-    distribution_method = env.get_distribution_method()
-
-    order_id = parms['orderid']
-
-    if distribution_method == DISTRIBUTION_METHOD_LOCAL:
-        stage_local_statistics_data(output_dir, work_dir, order_id)
-
-    else:
-        stage_remote_statistics_data(stage_dir, work_dir, order_id)
+    for folder in dirs_to_make(base_work_dir, directories):
+        logging.debug('Create directory: %s', folder)
+        utilities.create_directory(folder)

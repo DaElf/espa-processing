@@ -1,3 +1,4 @@
+from setuptools import find_packages
 from setuptools import setup
 
 def version():
@@ -23,12 +24,12 @@ setup(name='espa-processing',
       author='USGS EROS ESPA',
       author_email='',
       license='Unlicense',
-      packages=None,
+      packages=find_packages(),
       install_requires=[
           'falcon',
           'PyYAML',
           'requests',
-          'uWSGI',
+          #'uWSGI',
           'marshmallow>=3.0.0b8',
           'addict',
           'python-dateutil',
@@ -43,6 +44,7 @@ setup(name='espa-processing',
       # $ pip install -e .[test]
       extras_require={
           'test': [
+              'pylint',
               'pytest',
               'pytest-cov',
               'vcrpy',
@@ -56,6 +58,7 @@ setup(name='espa-processing',
       },
       entry_points={
           'console_scripts': [
+              'espa-cli = processing.cli:main'
           ],
       },
       include_package_data=True,

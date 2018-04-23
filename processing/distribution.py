@@ -14,9 +14,6 @@ from time import sleep
 
 import settings
 import utilities
-from logging_tools import EspaLogging
-from environment import Environment, DISTRIBUTION_METHOD_LOCAL
-from espa_exception import ESPAException
 import sensor
 import transfer
 
@@ -787,3 +784,74 @@ def distribute_product(immutability, product_name, source_path,
                                       parms)
 
     return (product_file, cksum_file)
+
+
+
+def tar_files(tarred_full_path, file_list, gzip=False):
+    """Create a tar ball (*.tar or *.tar.gz) of the specified file(s)
+
+    Args:
+        tarred_full_path (str): The full path to the tarred filename.
+        file_list (list): The files to tar as a list.
+        gzip (bool): Whether or not to gzip the tar on the fly.
+
+    Returns:
+        target (str): The full path to the tarred/gzipped filename.
+
+    Raises:
+        Exception(message)
+    """
+
+    flags = '-cf'
+    target = '%s.tar' % tarred_full_path
+
+    # If zipping was chosen, change the flags and the target name
+    if gzip:
+        flags = '-czf'
+        target = '%s.tar.gz' % tarred_full_path
+
+    cmd = ['tar', flags, target]
+    cmd.extend(file_list)
+    cmd = ' '.join(cmd)
+
+    output = ''
+    try:
+        output = execute_cmd(cmd)
+    except Exception:
+        msg = "Error encountered tar'ing file(s): Stdout/Stderr:"
+        if len(output) > 0:
+            msg = ' '.join([msg, output])
+        else:
+            msg = ' '.join([msg, 'NO STDOUT/STDERR'])
+        # Raise and retain the callstack
+        raise Exception(msg)
+
+    return target
+
+
+def gzip_files(file_list):
+    """Create a gzip for each of the specified file(s).
+
+    Args:
+        file_list (list): The files to tar as a list.
+
+    Raises:
+        Exception(message)
+    """
+
+    # Force the gzip file to overwrite any previously existing attempt
+    cmd = ['gzip', '--force']
+    cmd.extend(file_list)
+    cmd = ' '.join(cmd)
+
+    output = ''
+    try:
+        output = execute_cmd(cmd)
+    except Exception:
+        msg = 'Error encountered compressing file(s): Stdout/Stderr:'
+        if len(output) > 0:
+            msg = ' '.join([msg, output])
+        else:
+            msg = ' '.join([msg, 'NO STDOUT/STDERR'])
+        # Raise and retain the callstack
+        raise Exception(msg)

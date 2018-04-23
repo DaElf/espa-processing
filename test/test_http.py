@@ -17,6 +17,10 @@ def tests_ping(client):
     assert response.status == falcon.HTTP_OK
     assert response.content.startswith('This is an ESPA processing node')
 
-def tests_post(client):
+def test_invalid_method(client):
     response = client.simulate_get('/v{}'.format(__version__))
+    assert response.status == falcon.HTTP_405
+
+def test_basic_post(client):
+    response = client.simulate_post('/v{}'.format(__version__))
     assert response.status == falcon.HTTP_405

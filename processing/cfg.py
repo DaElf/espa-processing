@@ -28,9 +28,9 @@ def cfgfile(config_file=None):
     Returns:
         str: path to configuration
     """
-    return config_file or os.getenv('ESPA_PROC_CONFIG_PATH',
+    return config_file or os.getenv('ESPA_PROC_CFG_FILENAME',
                                     os.path.join(os.path.expanduser('~/.usgs'),
-                                                 '.espa-processing.ini'))
+                                                 'espa', 'processing.conf'))
 
 
 def from_file(section, config_file=None):

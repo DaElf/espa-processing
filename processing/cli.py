@@ -5,8 +5,9 @@ from argparse import ArgumentParser
 import logging
 
 import cfg
-from logging_tools import configure_base_logger
 import processor
+from utilities import configure_base_logger
+from schema import ProcessingRequestSchema
 
 from . import __version__
 
@@ -364,6 +365,18 @@ def build_command_line_parser():
     return parser
 
 
+def stack_args(cli_args):
+    """ Converts the flat processing options into nested JSON
+
+    Args:
+        cli_args (dict): arguments parsed from the CLI
+
+    Returns:
+        dict: nested dictionary grouped by types/usage
+    """
+    return cli_args
+
+
 def parse_command_line():
     """Parses the command line
 
@@ -379,6 +392,6 @@ def parse_command_line():
 def main():
     """ Command line entrypoint to process an order (stage, run, distrbute)
     """
-    cli_args = parse_command_line()
+    cli_args = ProcessingRequestSchema().load(stack_args(parse_command_line()))
     configure_base_logger(level='debug' if cli_args.get('debug') else 'info')
-    processor.get_instance(cfg.get('processing'), cli_args).process()
+    processor.process(cfg.get('processing'), cli_args)

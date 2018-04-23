@@ -1,0 +1,339 @@
+
+# Converts the Landsat(LPGS) input data to our internal raw binary format
+landsat:
+  sensors: [ LT04, LT05, LE07, LC08, LO08, LT08 ]
+  products: [ L1T, L1G, L1TP, L1GT, L1GS ]
+  outputs:
+    - 'L*.TIF'
+    - "README.GTF"
+    - "*gap_mask*"
+
+lpgs_to_espa:
+  requires: [ landsat ]
+  products: [ espa_landsat ]
+  cmd: convert_lpgs_to_espa
+  args:
+    - "--mtl": "{product_id}_MTL.txt"
+  outputs:
+    - "*b.img"
+
+# Clips the bands to matching fill extents
+clipping:
+  requires: [ lpgs_to_espa ]
+  cmd: clip_band_misalignment
+  args:
+    - "--xml": "{product_id}.xml"
+  outputs: []
+
+# Generates the initial pixel QA band from the Level-1 QA band
+pixel_qa:
+  requires: [ clipping ]
+  cmd: generate_pixel_qa
+  args:
+    - "--xml": "{product_id}.xml"
+  outputs: []
+
+# Generates surface reflectance products
+bt:
+  sensors: [ LT04, LT05, LE07, LC08, LT08 ]
+  products: [ toa_bt, radsat_qa ]
+  requires: [ clipping ]
+  cmd: surface_reflectance.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--process_sr": "False"
+  outputs:
+    - "*_bt_band6.img"
+    - "*_bt_band1[0-1].img"
+
+toa:
+  sensors: [ LT04, LT05, LE07, LC08, LO08 ]
+  products: [ toa_refl, angle_bands, radsat_qa ]
+  requires: [ clipping ]
+  cmd: surface_reflectance.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--process_sr": "False"
+  outputs:
+    - "*_toa_band[0-9].img"
+
+sr:
+  sensors: [ LT04, LT05, LE07, LC08 ]
+  products: [ sr_refl ]
+  requires: [ clipping ]
+  cmd: surface_reflectance.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--process_sr": "True"
+    - "--write_toa": null
+  outputs:
+    - "*_sr_band[0-9].img"
+
+# Generates the requested spectral indices
+sr_evi:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--evi": null
+  outputs:
+    - "*_evi.img"
+sr_msavi:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--msavi": null
+  outputs:
+    - "*_msavi.img"
+sr_nbr:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--nbr": null
+  outputs:
+    - "*_nbr.img"
+sr_nbr2:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--nbr2": null
+  outputs:
+    - "*_nbr2.img"
+sr_ndmi:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--ndmi": null
+  outputs:
+    - "*_ndmi.img"
+sr_ndvi:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--ndvi": null
+  outputs:
+    - "*_ndvi.img"
+sr_savi:
+  requires: [ sr ]
+  cmd: spectral_indices.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--savi": null
+  outputs:
+    - "*_savi.img"
+
+# Adds cloud dilation to the pixel QA band based on original cfmask cloud dilation
+dialated_cloud:
+  requires: [ pixel_qa ]
+  cmd: dilate_pixel_qa
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--bit": 5
+    - "--distance": 3
+  outputs: []
+
+# Adds CFmask based water detection to the class based QA band
+cfmask_water:
+  requires: [ dialated_cloud ]
+  cmd: cfmask_water_detection
+  args:
+    - "--xml": "{product_id}.xml"
+  outputs: []
+
+# Generates an elevation product using the metadata from the source data
+elevation:
+  requires: [ clipping ]
+  products: [ elevation ]
+  cmd: build_elevation_band.py
+  args:
+    - "--xml": "{product_id}.xml"
+  outputs:
+    - "*_elevation.*"
+
+# Generates the Dynamic Surface Water Extent product
+dswe:
+  requires: [ sr, elevation ]
+  cmd: surface_water_extent.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--verbose": null
+  outputs:
+    - "*_dswe_diag.img"
+    - "*_dswe_intrpd.img"
+    - "*_dswe_mask.img"
+    - "*_dswe_pshsccss.img"
+    - "*_hillshade.img"
+    - "*_percent_slope.img"
+
+# Generates the Surface Temperature product
+st:
+  requires: [ bt, toa, elevation ]
+  products: [ st, intermediate_data ]
+  cmd: surface_temperature.py
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--keep-intermediate-data": null
+  outputs:
+    - "*_emis_stdev.img"
+    - "*_emis.img"
+    - "*_st_atmospheric_transmittance.img"
+    - "*_st_cloud_distance.img"
+    - "*_st_downwelled_radiance.img"
+    - "*_st_qa.img"
+    - "*_st_thermal_radiance.img"
+    - "*_st_upwelled_radiance.img"
+    - "*_surface_temperature.img"
+
+
+# Converts the MODIS(LPDAAC) input data to our internal raw binary format
+modis:
+  sensors: [ MOD09A1, MOD09GA, MOD09GQ, MOD09Q1,
+             MOD13Q1, MOD13A1, MOD13A2, MOD13A3,
+             MOD11A1,
+             MYD09A1, MYD09GA, MYD09GQ, MYD09Q1,
+             MYD13Q1, MYD13A1, MYD13A2, MYD13A3,
+             MYD11A1 ]
+  outputs:
+    - "M*.hdf"
+
+modis_to_espa:
+  requires: [ modis ]
+  cmd: convert_modis_to_espa
+  args:
+    - "--hdf": "$hdf_filename"
+  outputs:
+    - "*sur_refl_b*.img"
+    - "*NDVI.img"
+    - "*EVI.img"
+    - "*LST_Day_1km.img"
+    - "*LST_Night_1km.img"
+    - "*LST_Day_6km.img"
+    - "*LST_Night_6km.img"
+    - "*Emis_*.img"
+
+# Convert from our internal ESPA/ENVI format to GeoTIFF
+gtiff:
+  cmd: convert_espa_to_gtif
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--gtif": "$gtiff_name"
+    - "--del_src_files": null
+  outputs:
+    - "*.tif"
+
+# Convert from our internal ESPA/ENVI format to HDF
+hdf-eos2:
+  cmd: convert_espa_to_hdf
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--hdf": "$hdf_name"
+    - "--del_src_files": null
+  outputs:
+    - "*.hdf"
+
+# Convert from our internal ESPA/ENVI format to NetCDF
+netcdf:
+  cmd: convert_espa_to_netcdf
+  args:
+    - "--xml": "{product_id}.xml"
+    - "--netcdf": "$netcdf_name"
+    - "--del_src_files": null
+
+
+# Clip the product to output spatial extents
+extents:
+  cmd: espa_reprojection.py
+  args:
+    - "--extent-minx": "$minx"
+    - "--extent-maxx": "$maxx"
+    - "--extent-miny": "$miny"
+    - "--extent-maxy": "$maxy"
+    - "--extent-units": "$image_extents_units"
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+    - "--output-format": "envi"
+
+# Resample output pixels during reprojection
+resample:
+  cmd: espa_reprojection.py
+  args:
+    - "--resample-method": "$resample_method"
+    - "--output-format": "envi"
+
+# Resample output pixels to new size
+resize:
+  cmd: espa_reprojection.py
+  args:
+    - "--resample-method": "$resample_method"
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+    - "--output-format": "envi"
+
+# Reproject the data product to UTM
+utm:
+  cmd: espa_reprojection.py
+  args:
+    - utm
+    - "--zone": "$utm_zone"
+    - "--north-south": "$utm_north_south"
+    - "--datum": "$datum"
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+    - "--output-format": "envi"
+
+# Reproject the data product to Albers
+aea:
+  cmd: espa_reprojection.py
+  args:
+    - aea
+    - "--central-meridian": "$central_meridian"
+    - "--origin-latitude": "$origin_lat"
+    - "--std-parallel-1": "$std_parallel_1"
+    - "--std-parallel-2": "$std_parallel_2"
+    - "--false-easting": "$false_easting"
+    - "--false-northing": "$false_northing"
+    - "--datum": "$datum"
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+    - "--output-format": "envi"
+
+# Reproject the data product to Polar
+ps:
+  cmd: espa_reprojection.py
+  args:
+    - ps
+    - "--latitude-true-scale": "$latitude_true_scale"
+    - "--longitude-pole": "$longitude_pole"
+    - "--origin-latitude": "$origin_lat"
+    - "--false-easting": "$false_easting"
+    - "--false-northing": "$false_northing"
+    - "--datum": "$datum"
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+    - "--output-format": "envi"
+
+# Reproject the data product to Sinusoidal
+sinu:
+  cmd: espa_reprojection.py
+  args:
+    - sinu
+    - "--central-meridian": "$central_meridian"
+    - "--false-easting": "$false_easting"
+    - "--false-northing": "$false_northing"
+    - "--datum": "$datum"
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+
+# Reproject the data product to Geographic
+latlon:
+  cmd: espa_reprojection.py
+  args:
+    - latlon
+    - "--pixel-size": "$pixel_size"
+    - "--pixel-size-units": "$pixel_size_units"
+    - "--output-format": "envi"
