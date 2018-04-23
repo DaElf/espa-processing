@@ -13,6 +13,12 @@ def test_make_cmd():
     cmd = 'echo hello'
     assert cmd == providers.make_cmd({"cmd": "echo", "args": "hello"})
 
+
+def test_find_product():
+    mock_providers = {'i1': {'products': ['thing']}}
+    assert mock_providers == providers.find_product('thing', mock_providers)
+
+
 def test_lpgs_to_espa(pid=LT04_TEST_ID):
     product = 'espa_landsat'
     cmd = 'lpgs_to_espa --mtl {}.mtl;'.format(pid)
