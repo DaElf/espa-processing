@@ -19,17 +19,20 @@ VALID_DATUMS = ['WGS84', 'NAD27', 'NAD83']
 
 class ClipSchema(Schema):
     image_extents_units = fields.String(validate=validate.ContainsOnly(VALID_IMAGE_EXTENTS_UNITS), missing='meters')
-    maxx = fields.Float()
-    maxy = fields.Float()
-    minx = fields.Float()
-    miny = fields.Float()
+    maxx = fields.Float(required=True)
+    maxy = fields.Float(required=True)
+    minx = fields.Float(required=True)
+    miny = fields.Float(required=True)
 
 
 class CustomizationOptsSchema(Schema):
-    output_format = fields.String(validate=validate.ContainsOnly(VALID_OUTPUT_FORMATS))
-    pixel_size = fields.Float(missing=30.0)
-    pixel_size_units = fields.String(validate=validate.ContainsOnly(VALID_PIXEL_SIZE_UNITS))
-    resample_method = fields.String(validate=validate.ContainsOnly(VALID_RESAMPLE_METHODS))
+    output_format = fields.String(required=True,
+                                  validate=validate.ContainsOnly(VALID_OUTPUT_FORMATS))
+    pixel_size = fields.Float(required=False, missing=30.0)
+    pixel_size_units = fields.String(required=False, missing='meters',
+                                     validate=validate.ContainsOnly(VALID_PIXEL_SIZE_UNITS))
+    resample_method = fields.String(required=False, missing='near',
+                                    validate=validate.ContainsOnly(VALID_RESAMPLE_METHODS))
 
 
 class LatlonProjectionOptsSchema(Schema):
@@ -38,46 +41,50 @@ class LatlonProjectionOptsSchema(Schema):
 
 
 class PsProjectionOptsSchema(Schema):
-    latitude_true_scale = fields.Float(validate=(
-        validate.Range(min=-90.0, max=-60.0),
-        validate.Range(min=60.0, max=90.0)))
-    longitude_pole = fields.Float()
-    origin_lat = fields.Float(validate=validate.ContainsOnly([-90.0, 90.0]))
-    false_easting = fields.Float()
-    false_northing = fields.Float()
+    latitude_true_scale = fields.Float(required=True, validate=(
+                                       validate.Range(min=-90.0, max=-60.0),
+                                       validate.Range(min=60.0, max=90.0)))
+    longitude_pole = fields.Float(required=True)
+    origin_lat = fields.Float(required=True,
+                              validate=validate.ContainsOnly([-90.0, 90.0]))
+    false_easting = fields.Float(required=False, missing=0.0)
+    false_northing = fields.Float(required=False, missing=0.0)
     datum = fields.String(required=False, missing='WGS84',
                           validate=validate.ContainsOnly(VALID_DATUMS))
 
 
 class UtmProjectionOptsSchema(Schema):
-    utm_zone = fields.Int(validate=validate.Range(min=0, max=60))
-    utm_north_south = fields.String(validate=validate.ContainsOnly(VALID_NS))
+    utm_zone = fields.Int(required=True,
+                          validate=validate.Range(min=0, max=60))
+    utm_north_south = fields.String(required=True,
+                                    validate=validate.ContainsOnly(VALID_NS))
     datum = fields.String(required=False, missing='WGS84',
                           validate=validate.ContainsOnly(VALID_DATUMS))
 
 
 class SinuProjectionOptsSchema(Schema):
-    central_meridian = fields.Float()
-    false_easting = fields.Float()
-    false_northing = fields.Float()
+    central_meridian = fields.Float(required=True)
+    false_easting = fields.Float(required=False, missing=0.0)
+    false_northing = fields.Float(required=False, missing=0.0)
     datum = fields.String(required=False, missing='WGS84',
                           validate=validate.ContainsOnly(VALID_DATUMS))
 
 
 class AeaProjectionOptsSchema(Schema):
-    central_meridian = fields.Float()
-    std_parallel_1 = fields.Float()
-    std_parallel_2 = fields.Float()
-    origin_lat = fields.Float()
-    false_easting = fields.Float()
-    false_northing = fields.Float()
-    datum = fields.String()
+    central_meridian = fields.Float(required=True)
+    std_parallel_1 = fields.Float(required=True)
+    std_parallel_2 = fields.Float(required=True)
+    origin_lat = fields.Float(required=True)
+    false_easting = fields.Float(required=False, missing=0.0)
+    false_northing = fields.Float(required=False, missing=0.0)
+    datum = fields.String(required=False, missing='WGS84',
+                          validate=validate.ContainsOnly(VALID_DATUMS))
 
 
 class AvailableProductsSchema(Schema):
     """ Supported options for processing """
-    customization = fields.Nested(CustomizationOptsSchema)
-    extents = fields.Nested(ClipSchema)
+    customization = fields.Nested(CustomizationOptsSchema, required=False)
+    extents = fields.Nested(ClipSchema, required=False)
     projection = fields.Nested((
         AeaProjectionOptsSchema,
         SinuProjectionOptsSchema,
@@ -93,8 +100,10 @@ class SupportedSensorsField(fields.String):
         _ = sensor.info(value)
         return super(SupportedSensorsField, self)._deserialize(value, attr, data)
 
+
 class MetadataSchema(Schema):
     orderid = fields.String(required=True)
+
 
 class ProcessingRequestSchema(Schema):
     options = fields.Nested(AvailableProductsSchema, required=True)
