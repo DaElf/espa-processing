@@ -81,17 +81,19 @@ class AeaProjectionOptsSchema(Schema):
                           validate=validate.ContainsOnly(VALID_DATUMS))
 
 
+class ProjectionSchema(Schema):
+    aea = fields.Nested(AeaProjectionOptsSchema)
+    sinu = fields.Nested(SinuProjectionOptsSchema)
+    utm = fields.Nested(UtmProjectionOptsSchema)
+    ps = fields.Nested(PsProjectionOptsSchema)
+    latlon = fields.Nested(LatlonProjectionOptsSchema)
+
+
 class AvailableProductsSchema(Schema):
     """ Supported options for processing """
     customization = fields.Nested(CustomizationOptsSchema, required=False)
     extents = fields.Nested(ClipSchema, required=False)
-    projection = fields.Nested((
-        AeaProjectionOptsSchema,
-        SinuProjectionOptsSchema,
-        UtmProjectionOptsSchema,
-        PsProjectionOptsSchema,
-        LatlonProjectionOptsSchema,
-    ))
+    projection = fields.Nested(ProjectionSchema, required=False)
 
 
 class SupportedSensorsField(fields.String):
