@@ -1,7 +1,7 @@
 """ Defines JSON validation de-/serialization """
 import datetime
 
-from marshmallow import Schema, fields, pre_load, validate, ValidationError
+from marshmallow import Schema, fields, pre_load, validate, validates, ValidationError
 
 import sensor
 
@@ -14,11 +14,11 @@ VALID_PIXEL_SIZE_UNITS = ['meters', 'dd']
 VALID_IMAGE_EXTENTS_UNITS = ['meters', 'dd']
 VALID_PROJECTIONS = ['sinu', 'aea', 'utm', 'ps', 'lonlat']
 VALID_NS = ['north', 'south']
-VALID_DATUMS = ['WGS84', 'NAD27', 'NAD83']
+VALID_DATUMS = ['wgs84', 'nad27', 'nad83']
 
 
 class ClipSchema(Schema):
-    image_extents_units = fields.String(validate=validate.ContainsOnly(VALID_IMAGE_EXTENTS_UNITS), missing='meters')
+    image_extents_units = fields.String(validate=validate.OneOf(VALID_IMAGE_EXTENTS_UNITS), missing='meters')
     maxx = fields.Float(required=True)
     maxy = fields.Float(required=True)
     minx = fields.Float(required=True)
@@ -27,47 +27,49 @@ class ClipSchema(Schema):
 
 class CustomizationOptsSchema(Schema):
     output_format = fields.String(required=True,
-                                  validate=validate.ContainsOnly(VALID_OUTPUT_FORMATS))
+                                  validate=validate.OneOf(VALID_OUTPUT_FORMATS))
     pixel_size = fields.Float(required=False, missing=30.0)
     pixel_size_units = fields.String(required=False, missing='meters',
-                                     validate=validate.ContainsOnly(VALID_PIXEL_SIZE_UNITS))
+                                     validate=validate.OneOf(VALID_PIXEL_SIZE_UNITS))
     resample_method = fields.String(required=False, missing='near',
-                                    validate=validate.ContainsOnly(VALID_RESAMPLE_METHODS))
+                                    validate=validate.OneOf(VALID_RESAMPLE_METHODS))
 
 
 class LatlonProjectionOptsSchema(Schema):
-    datum = fields.String(required=False, missing='WGS84',
-                          validate=validate.ContainsOnly(VALID_DATUMS))
+    datum = fields.String(required=False, missing='wgs84',
+                          validate=validate.OneOf(VALID_DATUMS))
 
 
 class PsProjectionOptsSchema(Schema):
-    latitude_true_scale = fields.Float(required=True, validate=(
-                                       validate.Range(min=-90.0, max=-60.0),
-                                       validate.Range(min=60.0, max=90.0)))
+    latitude_true_scale = fields.Float(required=True)
     longitude_pole = fields.Float(required=True)
     origin_lat = fields.Float(required=True,
-                              validate=validate.ContainsOnly([-90.0, 90.0]))
+                              validate=validate.OneOf([-90.0, 90.0]))
     false_easting = fields.Float(required=False, missing=0.0)
     false_northing = fields.Float(required=False, missing=0.0)
-    datum = fields.String(required=False, missing='WGS84',
-                          validate=validate.ContainsOnly(VALID_DATUMS))
+    datum = fields.String(required=False, missing='wgs84',
+                          validate=validate.OneOf(VALID_DATUMS))
 
+    @validates('latitude_true_scale')
+    def check_polar(self, value):
+        if not 60.0 <= abs(value) <= 90.0:
+            raise ValidationError('Must be between (-60.0 and -90.0) or (60.0 and 90.0)')
 
 class UtmProjectionOptsSchema(Schema):
     utm_zone = fields.Int(required=True,
                           validate=validate.Range(min=0, max=60))
     utm_north_south = fields.String(required=True,
-                                    validate=validate.ContainsOnly(VALID_NS))
-    datum = fields.String(required=False, missing='WGS84',
-                          validate=validate.ContainsOnly(VALID_DATUMS))
+                                    validate=validate.OneOf(VALID_NS))
+    datum = fields.String(required=False, missing='wgs84',
+                          validate=validate.OneOf(VALID_DATUMS))
 
 
 class SinuProjectionOptsSchema(Schema):
     central_meridian = fields.Float(required=True)
     false_easting = fields.Float(required=False, missing=0.0)
     false_northing = fields.Float(required=False, missing=0.0)
-    datum = fields.String(required=False, missing='WGS84',
-                          validate=validate.ContainsOnly(VALID_DATUMS))
+    datum = fields.String(required=False, missing='wgs84',
+                          validate=validate.OneOf(VALID_DATUMS))
 
 
 class AeaProjectionOptsSchema(Schema):
@@ -77,8 +79,8 @@ class AeaProjectionOptsSchema(Schema):
     origin_lat = fields.Float(required=True)
     false_easting = fields.Float(required=False, missing=0.0)
     false_northing = fields.Float(required=False, missing=0.0)
-    datum = fields.String(required=False, missing='WGS84',
-                          validate=validate.ContainsOnly(VALID_DATUMS))
+    datum = fields.String(required=False, missing='wgs84',
+                          validate=validate.OneOf(VALID_DATUMS))
 
 
 class ProjectionSchema(Schema):
@@ -111,4 +113,5 @@ class ProcessingRequestSchema(Schema):
     options = fields.Nested(AvailableProductsSchema, required=True)
     metadata = fields.Nested(MetadataSchema, required=True)
     input_name = SupportedSensorsField(required=True)
-    input_urls = fields.List(fields.String(validate=validate.URL()), required=True)
+    input_urls = fields.List(fields.String(required=True,
+                             validate=validate.Regexp('(http|https|file)[:][/]{2}.*')))
