@@ -28,7 +28,7 @@ def http_transfer_file(remote_url, destination_file,
         timeout (int): seconds to wait for server response
 
     Returns:
-        None
+        str: path to destination file
     '''
     if os.path.exists(destination_file):
         logging.warning('Already exists: %s \n' % destination_file)
@@ -38,6 +38,10 @@ def http_transfer_file(remote_url, destination_file,
     head = requests.head(remote_url, auth=auth, timeout=timeout,
                          verify=False, allow_redirects=True)
     head.raise_for_status()
+
+    if os.path.isdir(destination_file):
+        filename = head.headers['Content-Disposition'].split('filename=')[-1]
+        destination_file = os.path.join(destination_file, filename)
 
     file_size = None
     if 'Content-Length' in head.headers:
@@ -67,6 +71,7 @@ def http_transfer_file(remote_url, destination_file,
 
     if bytes_recv >= file_size:
         os.rename(tmp_file, destination_file)
+    return destination_file
 
 
 def local_transfer_file(source_file, destination_file, remove_original=False):
@@ -78,16 +83,17 @@ def local_transfer_file(source_file, destination_file, remove_original=False):
         remove_original (bool): flag to remove the original file
 
     Returns:
-        None
+        str: path to destination file
     """
     logging.debug('Copy file %s to %s', source_file, destination_file)
     shutil.copyfile(source_file, destination_file)
     if remove_original:
         logging.debug('Remove source file %s', source_file)
         os.unlink(source_file)
+    return destination_file
 
 
-def download_file_url(download_url, destination_file, username=None, password=None):
+def download_file_url(download_url, destination_file=None, username=None, password=None):
     ''' Using a URL download the specified file to the destination
 
     Args:
@@ -97,11 +103,11 @@ def download_file_url(download_url, destination_file, username=None, password=No
         password (str): authentication credentials for remote server
 
     Returns:
-        None
+        str: path to destination file
     '''
     protocol_type = download_url.split("://")[0]
     if protocol_type in ('http', 'https'):
-        http_transfer_file(download_url, destination_file)
+        return http_transfer_file(download_url, destination_file)
     elif protocol_type in ('file', ):
         source_file = download_url.replace('file://', '')
-        local_transfer_file(source_file, destination_file, remove_original=False)
+        return local_transfer_file(source_file, destination_file, remove_original=False)
