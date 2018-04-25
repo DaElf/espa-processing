@@ -1,0 +1,22 @@
+version: "3"
+
+networks:
+  espa_processing:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.43.0/24
+
+services:
+  nginx:
+    image: "nginx:latest"
+    ports:
+      - "9080:80"
+      - "9443:443"
+    volumes:
+      - ./resources/nginx/config:/etc/nginx/conf.d
+      - ./resources/nginx/data/:/usr/share/nginx/data
+    networks:
+      - espa_processing
+    restart: always

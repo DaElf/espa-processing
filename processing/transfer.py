@@ -30,7 +30,7 @@ def http_transfer_file(remote_url, destination_file,
     Returns:
         str: path to destination file
     '''
-    if os.path.exists(destination_file):
+    if not os.path.isdir(destination_file) and os.path.exists(destination_file):
         logging.warning('Already exists: %s \n' % destination_file)
         return
 
@@ -39,8 +39,12 @@ def http_transfer_file(remote_url, destination_file,
                          verify=False, allow_redirects=True)
     head.raise_for_status()
 
+    logging.info('>>> HEADERS %s', head.headers)
     if os.path.isdir(destination_file):
-        filename = head.headers['Content-Disposition'].split('filename=')[-1]
+        if 'Content-Disposition' in head.headers:
+            filename = head.headers['Content-Disposition'].split('filename=')[-1]
+        else:
+            filename = os.path.basename(remote_url)
         destination_file = os.path.join(destination_file, filename)
 
     file_size = None

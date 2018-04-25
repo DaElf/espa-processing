@@ -1,6 +1,6 @@
 {
-    "input_name": "LT04_L1TP_030031_19890420_20161002_01_T1",
-    "input_urls": [ "file:///home/espadev/espa-processing/processing/LT04.tar.gz" ],
+    "input_name": "LT04_L1TP_030031_19700101_20190101_01_T1",
+    "input_urls": [ "http://192.168.43.2/LT04_L1TP_030031_19700101_20190101_01_T1.tar.gz" ],
     "products": [ "toa_refl" ],
     "metadata": {"order_id": "this-orderid"},
     "customization": {"output_format": "envi"},

@@ -15,6 +15,7 @@ script:
 - "pytest --cov=./"
 after_success:
 - codecov
+- docker-compose -f test/docker-compose.yaml down
 deploy:
   - provider: script
     script: make docker-deploy
@@ -35,6 +36,10 @@ before_cache:
 before_install:
   # Load cached docker images
   - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
+  - docker-compose -f test/docker-compose.yaml up -d
+  - NGINX_IP=`docker inspect -f "{{ .NetworkSettings.Networks.test_espa_processing.IPAddress }}" test_nginx_1`
+  - NGINX_URL="http://$NGINX_IP"
+  - NGINX_DATA="test/nginx/data"
 cache:
   bundler: true
   directories:
