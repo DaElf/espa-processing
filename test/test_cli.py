@@ -23,176 +23,119 @@ def parser():
 @pytest.fixture(scope='function')
 def options():
     return ['--order-id', 'ORDERID',
-                      '--input-product-id', 'PRODUCT_ID',
-                      '--input-url', 'file://',
-                      '--espa-api', 'skip_api',
-                      '--work-dir', '.',
-                      '--dist-method', 'local',
-                      '--dist-dir', '.']
+            '--input-product-id', 'LT04_L1TP_030031_19890420_20161002_01_T1',
+            '--input-url', 'file://',]
 
 
-class TestCLI(object):
-    """Test the cli.py methods"""
+def test_extents_missing_minx(parser, options):
+    options.extend(['--product-type', 'landsat'])
+    options.extend(['--output-format', 'envi'])
+    options.extend(['--extent-maxx', '2.0'])
 
-    def test_extents_not_specified(self, parser, options):
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
+    with pytest.raises(marshmallow.ValidationError):
+        args = cli.stack_args(vars(parser.parse_args(options)))
 
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-    def test_extents_missing_minx(self, parser, options):
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
-        options.extend(['--extent-maxx', '2.0'])
-
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-    def test_extents_missing_specified(self, parser, options):
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
-        options.extend(['--extent-minx', '1.0'])
-
-        # Missing maxx
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing miny
-        options.extend(['--extent-maxx', '2.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing maxy
-        options.extend(['--extent-miny', '1.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Check all options
-        options.extend(['--extent-maxy', '2.0'])
-
-        assert parser.parse_args(options)
+@pytest.fixture
+def extents_options(options):
+    options.extend(['--product-type', 'landsat'])
+    options.extend(['--output-format', 'envi'])
+    options.extend(['--extent-minx', '1.0'])
+    options.extend(['--extent-maxx', '2.0'])
+    options.extend(['--extent-miny', '1.0'])
+    options.extend(['--extent-maxy', '2.0'])
+    return options
 
 
-    def test_sinu_specified(self, parser, options):
-        # Check missing options
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
-        options.extend(['--target-projection', 'sinu'])
+def test_extents_missing(parser, extents_options):
+    ix = extents_options.index('--extent-maxx')
+    _ = extents_options.pop(ix), extents_options.pop(ix)
+    with pytest.raises(marshmallow.ValidationError):
+        args = cli.stack_args(vars(parser.parse_args(extents_options)))
 
-        # Missing central meridian
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+def test_extents_valid(parser, extents_options):
+    assert {} != cli.stack_args(vars(parser.parse_args(extents_options)))
 
-        # Missing false easting
-        options.extend(['--central-meridian', '-96.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
 
-        # Missing false northing
-        options.extend(['--false-easting', '2.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+@pytest.fixture
+def sinu_proj_opts(options):
+    options.extend(['--product-type', 'landsat'])
+    options.extend(['--output-format', 'envi'])
+    options.extend(['--target-projection', 'sinu'])
+    options.extend(['--central-meridian', '-96.0'])
+    options.extend(['--false-easting', '2.0'])
+    options.extend(['--false-northing', '2.0'])
+    return options
 
-        # Check all options
-        options.extend(['--false-northing', '2.0'])
+def test_sinu_missing(parser, sinu_proj_opts):
+    ix = sinu_proj_opts.index('--central-meridian')
+    _ = sinu_proj_opts.pop(ix), sinu_proj_opts.pop(ix)
+    with pytest.raises(marshmallow.ValidationError):
+        args = cli.stack_args(vars(parser.parse_args(sinu_proj_opts)))
 
-        assert parser.parse_args(options)
+def test_sinu_valid(parser, sinu_proj_opts):
+    assert {} != cli.stack_args(vars(parser.parse_args(sinu_proj_opts)))
 
-    def test_aea_specified(self, parser, options):
-        # Check missing options
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
-        options.extend(['--target-projection', 'aea'])
 
-        # Missing central meridian
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+@pytest.fixture
+def aea_proj_opts(options):
+    options.extend(['--product-type', 'landsat'])
+    options.extend(['--output-format', 'envi'])
+    options.extend(['--target-projection', 'aea'])
+    options.extend(['--central-meridian', '-96.0'])
+    options.extend(['--std-parallel-1', '29.0'])
+    options.extend(['--std-parallel-2', '70.0'])
+    options.extend(['--origin-latitude', '40.0'])
+    options.extend(['--false-easting', '2.0'])
+    options.extend(['--false-northing', '2.0'])
+    options.extend(['--datum', 'wgs84'])
+    return options
 
-        # Missing std parallel 1
-        options.extend(['--central-meridian', '-96.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+def test_aea_missing(parser, aea_proj_opts):
+    ix = aea_proj_opts.index('--origin-latitude')
+    _ = aea_proj_opts.pop(ix), aea_proj_opts.pop(ix)
+    with pytest.raises(marshmallow.ValidationError):
+        args = cli.stack_args(vars(parser.parse_args(aea_proj_opts)))
 
-        # Missing std parallel 2
-        options.extend(['--std-parallel-1', '29.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+def test_aea_valid(parser, aea_proj_opts):
+    assert {} != cli.stack_args(vars(parser.parse_args(aea_proj_opts)))
 
-        # Missing origin latitude
-        options.extend(['--std-parallel-2', '70.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
 
-        # Missing false easting
-        options.extend(['--origin-latitude', '40.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+@pytest.fixture
+def utm_proj_opts(options):
+    options.extend(['--product-type', 'landsat'])
+    options.extend(['--output-format', 'envi'])
+    options.extend(['--target-projection', 'utm'])
+    options.extend(['--utm-zone', '10'])
+    options.extend(['--utm-north-south', 'north'])
+    return options
 
-        # Missing false northing
-        options.extend(['--false-easting', '2.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+def test_utm_missing(parser, utm_proj_opts):
+    ix = utm_proj_opts.index('--utm-zone')
+    _ = utm_proj_opts.pop(ix), utm_proj_opts.pop(ix)
+    with pytest.raises(marshmallow.ValidationError):
+        args = cli.stack_args(vars(parser.parse_args(utm_proj_opts)))
 
-        # Missing datum
-        options.extend(['--false-northing', '2.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
+def test_utm_valid(parser, utm_proj_opts):
+    assert {} != cli.stack_args(vars(parser.parse_args(utm_proj_opts)))
 
-        # Check all options
-        options.extend(['--datum', 'wgs84'])
 
-        assert parser.parse_args(options)
+@pytest.fixture
+def ps_projection(options):
+    options.extend(['--product-type', 'landsat'])
+    options.extend(['--output-format', 'envi'])
+    options.extend(['--target-projection', 'ps'])
+    options.extend(['--latitude-true-scale', '-90.0'])
+    options.extend(['--longitude-pole', '0.0'])
+    options.extend(['--origin-latitude', '-90.0'])
+    options.extend(['--false-easting', '2.0'])
+    options.extend(['--false-northing', '2.0'])
+    return options
 
-    def test_utm_specified(self, parser, options):
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
-        options.extend(['--target-projection', 'utm'])
+def test_ps_missing(parser, ps_projection):
+    ix = ps_projection.index('--latitude-true-scale')
+    _ = ps_projection.pop(ix), ps_projection.pop(ix)
+    with pytest.raises(marshmallow.ValidationError):
+        args = cli.stack_args(vars(parser.parse_args(ps_projection)))
 
-        # Missing utm zone
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing utm north south
-        options.extend(['--utm-zone', '10.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Check all options
-        options.extend(['--utm-north-south', 'north'])
-
-        assert parser.parse_args(options)
-
-    def test_ps_specified(self, parser, options):
-        options.extend(['--product-type', 'landsat'])
-        options.extend(['--output-format', 'envi'])
-        options.extend(['--target-projection', 'ps'])
-
-        # Missing latitude true scale
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing longitude pole
-        options.extend(['--latitude-true-scale', '-90.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing origin latitude
-        options.extend(['--longitude-pole', '0.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing false easting
-        options.extend(['--origin-latitude', '-71.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Missing false northing
-        options.extend(['--false-easting', '2.0'])
-        with pytest.raises(marshmallow.ValidationError):
-            args = parser.parse_args(options)
-
-        # Check all options
-        options.extend(['--false-northing', '2.0'])
-
-        assert parser.parse_args(options)
+def test_ps_valid(parser, ps_projection):
+    assert {} != cli.stack_args(vars(parser.parse_args(ps_projection)))
