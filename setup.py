@@ -28,6 +28,7 @@ setup(name='espa-processing',
       install_requires=[
           'falcon',
           'PyYAML',
+          'simplejson',
           'requests',
           'uWSGI',
           'marshmallow>=3.0.0b8',

@@ -8,6 +8,7 @@ import cfg
 import sensor
 import schema
 import staging
+import providers
 import distribution
 
 
@@ -35,14 +36,14 @@ def stage_input_data(product_id, download_urls, untar=True):
 def get_product_name(input_name, fmt_str):
     """Build the product name from the product information and current time
     """
-    return fmt.format(prefix=sensor.info(input_name).product_prefix,
-                      timestamp=datetime.datetime.utcnow())
+    return fmt_str.format(prefix=str(sensor.info(input_name).product_prefix),
+                          timestamp=datetime.datetime.utcnow())
 
 
 def get_product_bucket(parms, fmt_str):
     """Build the product name from the product information and current time
     """
-    return fmt.format(**parms)
+    return fmt_str.format(**parms)
 
 
 # ===========================================================================
@@ -60,21 +61,21 @@ def process(cfg, parms):
     # Verify work request schema
     parms = schema.load(parms)
 
-    # Translate product identification
-    input_info = sensor.info(parms['product_id'])
-
     # Build the product name
-    product_name = get_product_name(input_info)
+    product_name = get_product_name(parms['input_name'],
+                                    cfg.get('output_filename_fmt'))
 
     # Initialize the processing directory.
-    directories = staging.initialize_processing_directory('base_work_dir')
+    directories = staging.initialize_processing_directory(cfg.get('work_dir'))
 
     # Stage the required input data
     staging.stage_input_data(download_urls=parms['input_urls'],
-                             staging=directories,
-                             destination=directories,
-                             unpack=cfg['processing'].get('unpack_formats'),
-                             remove=cfg['processing'].get('keep_intermediate'))
+                             staging=directories.get('stage'),
+                             destination=directories.get('work'),
+                             unpack=cfg.get('unpack_formats'),
+                             remove_staged=cfg.get('keep_intermediate','').lower() != 'false')
+
+    logging.warning(providers.sequence(parms['products'][0], product_id=parms['input_name']))
 
     # Remove science products and intermediate data not requested
     cleanup_work_dir()

@@ -3,21 +3,24 @@
 FROM jbrinkmann/lagoon-water-dragon:devel-2.3.0.0 as application
 
 RUN useradd espadev
+RUN mkdir -p /var/log/uwsgi /home/espadev/espa-processing \
+    && chown -R espadev:espadev /var/log/uwsgi \
+    && chown -R espadev:espadev /home/espadev/espa-processing
+
 WORKDIR /home/espadev/espa-processing
 COPY setup.py version.txt README.md /home/espadev/espa-processing/
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir --process-dependency-links -e .
 
-COPY ./processing/ /home/espadev/espa-processing/processing/
-COPY ./run/ /home/espadev/espa-processing/run/
-
-RUN mkdir -p /var/log/uwsgi \
-    && chown -R espadev:espadev /var/log/uwsgi
-ENV ESPA_PROC_CONFIG_PATH=/home/espadev/espa-processing/run/config.ini \
+ENV ESPA_PROC_CFG_FILENAME=/home/espadev/espa-processing/run/config.ini \
     ESPA_PROC_ENV="dev"
 
 USER espadev
 EXPOSE 8303 8304 8305
+
+COPY ./run/ /home/espadev/espa-processing/run/
+COPY ./processing/ /home/espadev/espa-processing/processing/
+
 ENTRYPOINT ["uwsgi", "run/uwsgi.ini"]
 
 # ==========+ Unit testing dependencies +==========

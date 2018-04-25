@@ -17,7 +17,7 @@ def read_yaml(filepath='processing', match='*.yaml'):
     """
     return dict([(x,y)
                 for fp in glob(os.path.join(filepath, match))
-                for x,y in yaml.load(open(fp)).items()]
+                for x,y in yaml.safe_load(open(fp)).items()]
                 )
 
 
@@ -88,9 +88,23 @@ def fetch_requires(requires, providers):
             for x in pull_reqs(requires)] for y in z ]
 
 
+def find_all(provider_path='processing/'):
+    from functools import reduce
+    from operator import add
+    return reduce(add, [v.get('products')
+                        for v in read_yaml(provider_path).values()
+                            if 'products' in v])
+
+
+import logging
 def sequence(product, provider_path='processing/', **kwargs):
     # TODO: docstring
+    logging.info('FIND A PROVIDER FOR: %s', product)
     a = read_yaml(provider_path)
     p = find_product(product, a)
-    r = fetch_requires(p, a)
-    return '; '.join(filter(None, [make_cmd(e, kwargs) for e in r] + [make_cmd(p.values()[0], kwargs)]))
+    logging.info('FIND PRODUCT: %s', p)
+    if p:
+        r = fetch_requires(p, a)
+        return '; '.join(filter(None, [make_cmd(e, kwargs) for e in r] + [make_cmd(p.values()[0], kwargs)]))
+    else:
+        raise IOError('Product %s not found in providers' % product)

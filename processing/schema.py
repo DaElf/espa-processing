@@ -4,6 +4,7 @@ import datetime
 from marshmallow import Schema, fields, pre_load, validate, validates, ValidationError
 
 import sensor
+import providers
 
 
 VALID_PRODUCT_TYPES = ['landsat', 'modis']
@@ -109,11 +110,14 @@ class MetadataSchema(Schema):
 class ProcessingRequestSchema(Schema):
     metadata = fields.Nested(MetadataSchema, required=True)
     input_name = SupportedSensorsField(required=True)
-    input_urls = fields.List(fields.String(required=True,
-                             validate=validate.Regexp('(http|https|file)[:][/]{2}.*')))
+    input_urls = fields.List(fields.String(
+                             validate=validate.Regexp('(http|https|file)[:][/]{2}.*')),
+                             required=True)
     customization = fields.Nested(CustomizationOptsSchema, required=False)
     extents = fields.Nested(ClipSchema, required=False)
     projection = fields.Nested(ProjectionSchema, required=False)
+    products = fields.List(fields.String(validate=lambda x: x in providers.find_all()),
+                           required=True)
 
 
 def load(parms):
