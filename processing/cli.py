@@ -341,4 +341,4 @@ def main():
     """
     cli_args = parse_command_line()
     configure_base_logger(level='debug' if cli_args.get('debug') else 'info')
-    processor.process(cfg.get('processing'), cli_args)
+    processor.process(cfg, cli_args)

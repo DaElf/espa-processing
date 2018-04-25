@@ -51,13 +51,14 @@ def initialize_processing_directory(base_work_dir, directories=['output', 'stage
     return new_directories
 
 
-def copy_data_to_destination(sources, dest, unpack=None, remove=True):
+def copy_data_to_destination(sources, dest, unpack=None, remove_staged=True):
     """ Copy data from source to destination, unpackaging first if needed
 
     Args:
         sources (list): path locations of files to transfer
         dest (str): path to folder for final files
         unpack (tuple): list of file extensions to unpack
+        remove_staged (bool): flag to remove staged files when in destination
 
     Returns:
         None
@@ -66,16 +67,16 @@ def copy_data_to_destination(sources, dest, unpack=None, remove=True):
         if unpack and any(filename.endswith(x) for x in unpack):
             logging.debug('Unpack file %s to %s', filename, dest)
             utilities.untar_data(filename, dest)
-            if remove:
+            if remove_staged:
                 logging.debug('Remove staged file %s', filename)
                 os.unlink(filename)
         else:
             logging.debug('Copy file %s to %s', filename, dest)
-            transfer.local_transfer_file(filename, dest, remove_original=remove)
+            transfer.local_transfer_file(filename, dest, remove_original=remove_staged)
 
 
 def stage_input_data(download_urls, staging='stage',
-                     destination='working', unpack=None, remove=True):
+                     destination='working', unpack=None, remove_staged=True):
     """Stages the input data required for the processor
 
     Args:
@@ -83,11 +84,12 @@ def stage_input_data(download_urls, staging='stage',
         staging (str): path to staging directory
         destination (str): path to existing output directory
         unpack (bool, tuple): flag to detect known archive/compressed formats
-        remove (bool): flag to remove staged files when in destination
+        remove_staged (bool): flag to remove staged files when in destination
 
     Returns:
         list: all new files in destination
     """
-    staged_files = transfer.download_file_url(download_urls, staging)
-    copy_data_to_destination(staged_files, destination, unpack, remove)
+    for uri in download_urls:
+        staged_files = transfer.download_file_url(uri, staging)
+        copy_data_to_destination(staged_files, destination, unpack, remove_staged)
     return glob.glob(os.path.join(destination, '*'))
