@@ -347,22 +347,56 @@ def build_command_line_parser():
     developer.add_argument('--dev-mode',
                            action='store_true',
                            dest='dev_mode',
-                           default=False,
                            help='Specify developer mode')
 
     developer.add_argument('--dev-intermediate',
                            action='store_true',
                            dest='dev_intermediate',
-                           default=False,
                            help='Specify keeping intermediate data files')
 
     developer.add_argument('--debug',
                            action='store_true',
                            dest='debug',
-                           default=False,
                            help='Specify debug logging')
 
     return parser
+
+
+def reconstruct_schema(args, mapping):
+    """ Convert flat argument set to nested schema
+
+    Args:
+        args (dict): key/value pairs supplied in flat format
+        mapping (dict): schema tree where strings become args
+
+    Returns:
+        dict: nested schema populated from args
+
+    Example:
+        >>> reconstruct_schema({'hello': 1}, {'here': {'there': 'hello'}})
+        {'here': {'there': 1}}
+    """
+    return {k: (args[v] if isinstance(v, str)
+                else reconstruct_schema(args, v))
+            for k, v in mapping.items() }
+
+
+def clear_all_none(args):
+    """ Strip all None from a key/value structure, including keys which nested them
+
+    Args:
+        args (dict): key/value pairs which may contain None values
+
+    Returns:
+        dict: structure with all None removed and no empty values
+
+    Example:
+        >>> clear_all_none({'a': 1, 'b': {'c': None}})
+        {'a': 1}
+    """
+    return dict((x, y) for x, y in [
+                (k, (v if not isinstance(v, dict) else clear_all_none(v)))
+                for k, v in args.items() if v is not None ] if y != {})
 
 
 def stack_args(cli_args):

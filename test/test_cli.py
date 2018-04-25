@@ -6,6 +6,16 @@ import marshmallow
 from processing import cli
 
 
+def test_reconstruct_schema():
+    expected = {'here': {'there': 1}}
+    assert expected == cli.reconstruct_schema({'hello': 1}, {'here': {'there': 'hello'}})
+
+
+def test_clear_all_none():
+    expected = {'a': 1}
+    assert expected == cli.clear_all_none({'a': 1, 'b': {'c': None}})
+
+
 @pytest.fixture(scope="module")
 def parser():
     return cli.build_command_line_parser()
