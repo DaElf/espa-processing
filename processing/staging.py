@@ -1,10 +1,4 @@
-
-'''
-Description: Provides routines for creating order directories and staging data
-             to them.
-
-License: NASA Open Source Agreement 1.3
-'''
+''' Provides routines for creating order directories and staging data '''
 
 import os
 import sys
@@ -38,7 +32,11 @@ def initialize_processing_directory(base_work_dir, directories=['output', 'stage
     Args:
         base_work_dir (str): relative or absolute path to base working directory
         directories (list): all subfolders to create undir base dir
+
+    Returns:
+        dict: created directories, keys by basename
     """
+    new_directories = dict()
     if os.path.exists(base_work_dir):
         logging.warning('Removing processing directory: %s', base_work_dir)
         shutil.rmtree(base_work_dir, ignore_errors=True)
@@ -49,3 +47,47 @@ def initialize_processing_directory(base_work_dir, directories=['output', 'stage
     for folder in dirs_to_make(base_work_dir, directories):
         logging.debug('Create directory: %s', folder)
         utilities.create_directory(folder)
+        new_directories.update({os.path.basename(folder): folder})
+    return new_directories
+
+
+def copy_data_to_destination(sources, dest, unpack=None, remove=True):
+    """ Copy data from source to destination, unpackaging first if needed
+
+    Args:
+        sources (list): path locations of files to transfer
+        dest (str): path to folder for final files
+        unpack (tuple): list of file extensions to unpack
+
+    Returns:
+        None
+    """
+    for filename in sources:
+        if unpack and any(filename.endswith(x) for x in unpack):
+            logging.debug('Unpack file %s to %s', filename, dest)
+            utilities.untar_data(filename, dest)
+            if remove:
+                logging.debug('Remove staged file %s', filename)
+                os.unlink(filename)
+        else:
+            logging.debug('Copy file %s to %s', filename, dest)
+            transfer.local_transfer_file(filename, dest, remove_original=remove)
+
+
+def stage_input_data(download_urls, staging='stage',
+                     destination='working', unpack=None, remove=True):
+    """Stages the input data required for the processor
+
+    Args:
+        download_urls (list): accessible file locations
+        staging (str): path to staging directory
+        destination (str): path to existing output directory
+        unpack (bool, tuple): flag to detect known archive/compressed formats
+        remove (bool): flag to remove staged files when in destination
+
+    Returns:
+        list: all new files in destination
+    """
+    staged_files = transfer.download_file_url(download_urls, staging)
+    copy_data_to_destination(staged_files, destination, unpack, remove)
+    return glob.glob(os.path.join(destination, '*'))
