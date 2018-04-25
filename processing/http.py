@@ -19,7 +19,8 @@ class Ping(object):
 class Resource(object):
     def on_post(self, req, resp):
         try:
-            resp.body = processor.process(cfg, req)
+            body = json.load(req.stream)
+            resp.body = processor.process(cfg, body)
             resp.status = falcon.HTTP_200
         except Exception as exc:
             logging.error('Server Error: %s', exc.message)
