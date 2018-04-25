@@ -43,8 +43,8 @@ class LatlonProjectionOptsSchema(Schema):
 class PsProjectionOptsSchema(Schema):
     latitude_true_scale = fields.Float(required=True)
     longitude_pole = fields.Float(required=True)
-    origin_lat = fields.Float(required=True,
-                              validate=validate.OneOf([-90.0, 90.0]))
+    origin_latitude = fields.Float(required=True,
+                                   validate=validate.OneOf([-90.0, 90.0]))
     false_easting = fields.Float(required=False, missing=0.0)
     false_northing = fields.Float(required=False, missing=0.0)
     datum = fields.String(required=False, missing='wgs84',
@@ -76,7 +76,7 @@ class AeaProjectionOptsSchema(Schema):
     central_meridian = fields.Float(required=True)
     std_parallel_1 = fields.Float(required=True)
     std_parallel_2 = fields.Float(required=True)
-    origin_lat = fields.Float(required=True)
+    origin_latitude = fields.Float(required=True)
     false_easting = fields.Float(required=False, missing=0.0)
     false_northing = fields.Float(required=False, missing=0.0)
     datum = fields.String(required=False, missing='wgs84',
