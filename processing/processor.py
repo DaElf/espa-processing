@@ -9,6 +9,7 @@ import sensor
 import schema
 import staging
 import providers
+import utilities
 import distribution
 
 
@@ -72,10 +73,14 @@ def process(cfg, parms):
     staging.stage_input_data(download_urls=parms['input_urls'],
                              staging=directories.get('stage'),
                              destination=directories.get('work'),
-                             unpack=cfg.get('unpack_formats'),
+                             unpack=cfg.get('auto_unpack_files'),
                              remove_staged=cfg.get('keep_intermediate','').lower() != 'false')
 
-    logging.warning(providers.sequence(parms['products'][0], product_id=parms['input_name']))
+    shell_sequence = providers.sequence(parms['products'][0], product_id=parms['input_name'])
+    logging.warning(shell_sequence)
+
+    for cmd in shell_sequence.split(';'):
+        utilities.execute_cmd(cmd, directories.get('work'))
 
     # Remove science products and intermediate data not requested
     cleanup_work_dir()

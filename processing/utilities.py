@@ -98,6 +98,7 @@ def watch_stdout(cmd):
     Returns:
         dict: exit status code and text output stream from stdout
     """
+    logging.debug('Execute: %s', cmd)
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
     output = []
     for line in iter(process.stdout.readline, b''):
@@ -113,20 +114,24 @@ def watch_stdout(cmd):
     }
 
 
-def execute_cmd(cmd):
+def execute_cmd(cmd, workdir=None):
     """ Execute a system command line call, raise error on non-zero exit codes
 
     Args:
         cmd (str): The command line to execute.
+        workdir (str): path of directory to perform work in
 
     Returns:
         dict: exit status code and text output stream from stdout
     """
+    current_dir = os.getcwd()
+    if os.path.isdir(workdir or ''):
+        os.chdir(workdir)
 
     cparts = cmd
-    if isinstance(cmd, str):
+    if not isinstance(cmd, (tuple, list)):
         cparts = shlex.split(cmd)
-    results = watch_stdout(cmd)
+    results = watch_stdout(cparts)
 
     message = ''
     if results['status'] < 0:
@@ -139,11 +144,12 @@ def execute_cmd(cmd):
         message = ('Application [{}] returned error code [{}]'
                    .format(cmd, os.WEXITSTATUS(results['status'])))
 
+    os.chdir(current_dir)
     if len(message) > 0:
         if len(results['output']) > 0:
             # Add the output to the exception message
             message = ' Stdout/Stderr is: '.join([message, results['output']])
-        raise Exception(message)
+        logging.error(message)
 
     return results
 

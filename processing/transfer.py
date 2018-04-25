@@ -79,13 +79,16 @@ def local_transfer_file(source_file, destination_file, remove_original=False):
 
     Args:
         source_file (str): path location of local file to copy
-        destination_file (str): path to folder for final file
+        destination_file (str): path to folder or final filename
         remove_original (bool): flag to remove the original file
 
     Returns:
         str: path to destination file
     """
     logging.debug('Copy file %s to %s', source_file, destination_file)
+    if os.path.isdir(destination_file):
+        destination_file = os.path.join(destination_file,
+                                        os.path.basename(source_file))
     shutil.copyfile(source_file, destination_file)
     if remove_original:
         logging.debug('Remove source file %s', source_file)
@@ -106,8 +109,10 @@ def download_file_url(download_url, destination_file=None, username=None, passwo
         str: path to destination file
     '''
     protocol_type = download_url.split("://")[0]
+    logging.debug('#### PROTOCOL: %s', protocol_type)
     if protocol_type in ('http', 'https'):
         return http_transfer_file(download_url, destination_file)
     elif protocol_type in ('file', ):
         source_file = download_url.replace('file://', '')
+        logging.debug('#### source_file: %s', source_file)
         return local_transfer_file(source_file, destination_file, remove_original=False)
