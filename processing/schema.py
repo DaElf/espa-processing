@@ -55,6 +55,7 @@ class PsProjectionOptsSchema(Schema):
         if not 60.0 <= abs(value) <= 90.0:
             raise ValidationError('Must be between (-60.0 and -90.0) or (60.0 and 90.0)')
 
+
 class UtmProjectionOptsSchema(Schema):
     utm_zone = fields.Int(required=True,
                           validate=validate.Range(min=0, max=60))
@@ -91,27 +92,29 @@ class ProjectionSchema(Schema):
     latlon = fields.Nested(LatlonProjectionOptsSchema)
 
 
-class AvailableProductsSchema(Schema):
-    """ Supported options for processing """
+class SupportedSensorsField(fields.String):
+    """ Ensures support for the produt id supplied """
+    def _deserialize(self, value, attr, data):
+        try:
+            _ = sensor.info(value)
+            return super(SupportedSensorsField, self)._deserialize(value, attr, data)
+        except sensor.ProductNotImplemented:
+            raise ValidationError('Product not implemented')
+
+
+class MetadataSchema(Schema):
+    order_id = fields.String(required=True)
+
+
+class ProcessingRequestSchema(Schema):
+    metadata = fields.Nested(MetadataSchema, required=True)
+    input_name = SupportedSensorsField(required=True)
+    input_urls = fields.List(fields.String(required=True,
+                             validate=validate.Regexp('(http|https|file)[:][/]{2}.*')))
     customization = fields.Nested(CustomizationOptsSchema, required=False)
     extents = fields.Nested(ClipSchema, required=False)
     projection = fields.Nested(ProjectionSchema, required=False)
 
 
-class SupportedSensorsField(fields.String):
-    """ Ensures support for the produt id supplied """
-    def _deserialize(self, value, attr, data):
-        _ = sensor.info(value)
-        return super(SupportedSensorsField, self)._deserialize(value, attr, data)
-
-
-class MetadataSchema(Schema):
-    orderid = fields.String(required=True)
-
-
-class ProcessingRequestSchema(Schema):
-    options = fields.Nested(AvailableProductsSchema, required=True)
-    metadata = fields.Nested(MetadataSchema, required=True)
-    input_name = SupportedSensorsField(required=True)
-    input_urls = fields.List(fields.String(required=True,
-                             validate=validate.Regexp('(http|https|file)[:][/]{2}.*')))
+def load(parms):
+    return ProcessingRequestSchema().load(parms)
