@@ -21,8 +21,8 @@ def test_watch_stdout_fail():
 def test_execute_cmd():
     cmd = ["echo", "Hello World!"]
     assert utilities.watch_stdout(cmd) == utilities.execute_cmd(cmd)
+    assert {'status': 0, 'output': 'Hello World!'} == utilities.execute_cmd(cmd)
 
 def test_execute_cmd_raises():
     cmd = ["false"]
-    with pytest.raises(Exception):
-        utilities.execute_cmd(cmd)
+    assert {'status': 1, 'output': ''} == utilities.execute_cmd(cmd)

@@ -10,6 +10,7 @@ def base_order():
         'input_name': 'LT04_L1TP_030031_19890420_20161002_01_T1',
         'input_urls': [],
         'metadata': {'order_id': 'this-orderid'},
+        'products': [ 'toa_refl' ],
         }
 
 def test_not_valid_id(base_order):

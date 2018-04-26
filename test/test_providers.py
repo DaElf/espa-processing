@@ -13,6 +13,14 @@ def lsat_id(request ):
     }[request.param]
 
 
+@pytest.fixture(params=['T', 'A'])
+def modis_id(request ):
+    return {
+        "A": 'MYD09GA.A2017089.h12v02.005.2017091074612',
+        "T": 'MOD13Q1.A2000353.h27v07.006.2015148800230',
+    }[request.param]
+
+
 def test_no_yaml_found():
     assert {} == providers.read_yaml('/path/does/not/exist')
     assert {} == providers.read_yaml('processing', '*.notafile')
@@ -22,6 +30,8 @@ def provider_path():
     import os
     if os.path.isdir('processing'):
         return 'processing'
+    else:
+        raise IOError('WHAt!')
 
 def test_ok_yaml_found(provider_path):
     assert {} != providers.read_yaml(provider_path)
@@ -57,26 +67,40 @@ def test_lpgs_to_espa(lsat_id, provider_path):
 
 def test_toa_command(lsat_id, provider_path):
     product = 'toa_refl'
-    cmd = ['surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)]
-    assert providers.sequence(product, lsat_id) == cmd
+    cmd = 'surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)
+    assert providers.sequence(product, product_id=lsat_id) == cmd
 
-def test_bt_command():
-    assert 1 < 0
+def test_bt_command(lsat_id):
+    product = 'toa_bt'
+    cmd = 'surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)
+    assert providers.sequence(product, product_id=lsat_id) == cmd
 
-def test_sr_command_l8():
-    assert 1 < 0
+def test_sr_command_l8(lsat_id):
+    product = 'sr_refl'
+    cmd = 'surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)
+    assert providers.sequence(product, product_id=lsat_id) == cmd
 
-def test_sr_command_l7():
-    assert 1 < 0
+def test_sr_command_l7(lsat_id):
+    product = 'sr_refl'
+    cmd = 'surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)
+    assert providers.sequence(product, product_id=lsat_id) == cmd
 
-def test_st_command():
-    assert 1 < 0
+def test_st_command(lsat_id):
+    product = 'st'
+    cmd = 'surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)
+    assert providers.sequence(product, product_id=lsat_id) == cmd
 
-def test_sw_command():
-    assert 1 < 0
+def test_sw_command(lsat_id):
+    product = 'sw'
+    cmd = 'surface_reflectance.py --xml {}.xml --write-sr False'.format(lsat_id)
+    assert providers.sequence(product, product_id=lsat_id) == cmd
 
-def test_modis_command():
-    assert 1 < 0
+def test_modis_command(modis_id):
+    product = 'espa_modis'
+    cmd = 'convert_modis_to_espa --hdf {}.hdf'.format(modis_id)
+    assert providers.sequence(product, product_id=modis_id) == cmd
 
-def test_reproject_command():
-    assert 1 < 0
+def test_reproject_command(modis_id):
+    product = 'gtif'
+    cmd = 'convert_espa_to_gtif --xml {0}.xml --gtif {0}.tif'.format(modis_id)
+    assert providers.sequence(product, product_id=modis_id) == cmd

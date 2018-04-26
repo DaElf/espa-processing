@@ -35,7 +35,7 @@ def make_cmd(entity, extras=None):
         >>> make_cmd({"cmd": "echo", "args": "hello"})
         'echo hello'
     """
-    args = ' '.join('{} {}'.format(x, y.format(**extras)) for z in entity.get('args', []) for x, y in z.items())
+    args = ' '.join('{} {}'.format(x, y.format(**extras) if y is not None else '') for z in entity.get('args', []) for x, y in z.items())
     return '{cmd} {args}'.format(args=args, cmd=entity['cmd']) if 'cmd' in entity else ''
 
 

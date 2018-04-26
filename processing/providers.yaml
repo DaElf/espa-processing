@@ -72,6 +72,7 @@ sr:
 # Generates the requested spectral indices
 sr_evi:
   requires: [ sr ]
+  products: [ sr_evi ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -80,6 +81,7 @@ sr_evi:
     - "*_evi.img"
 sr_msavi:
   requires: [ sr ]
+  products: [ sr_msavi ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -88,6 +90,7 @@ sr_msavi:
     - "*_msavi.img"
 sr_nbr:
   requires: [ sr ]
+  products: [ sr_nbr ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -96,6 +99,7 @@ sr_nbr:
     - "*_nbr.img"
 sr_nbr2:
   requires: [ sr ]
+  products: [ sr_nbr2 ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -104,6 +108,7 @@ sr_nbr2:
     - "*_nbr2.img"
 sr_ndmi:
   requires: [ sr ]
+  products: [ sr_ndmi ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -112,6 +117,7 @@ sr_ndmi:
     - "*_ndmi.img"
 sr_ndvi:
   requires: [ sr ]
+  products: [ sr_ndvi ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -120,6 +126,7 @@ sr_ndvi:
     - "*_ndvi.img"
 sr_savi:
   requires: [ sr ]
+  products: [ sr_savi ]
   cmd: spectral_indices.py
   args:
     - "--xml": "{product_id}.xml"
@@ -130,6 +137,7 @@ sr_savi:
 # Adds cloud dilation to the pixel QA band based on original cfmask cloud dilation
 dialated_cloud:
   requires: [ pixel_qa ]
+  products: [ dialated_cloud ]
   cmd: dilate_pixel_qa
   args:
     - "--xml": "{product_id}.xml"
@@ -140,6 +148,7 @@ dialated_cloud:
 # Adds CFmask based water detection to the class based QA band
 cfmask_water:
   requires: [ dialated_cloud ]
+  products: [ cfmask_water ]
   cmd: cfmask_water_detection
   args:
     - "--xml": "{product_id}.xml"
@@ -158,6 +167,7 @@ elevation:
 # Generates the Dynamic Surface Water Extent product
 dswe:
   requires: [ sr, elevation ]
+  products: [ sw ]
   cmd: surface_water_extent.py
   args:
     - "--xml": "{product_id}.xml"
@@ -203,9 +213,10 @@ modis:
 
 modis_to_espa:
   requires: [ modis ]
+  products: [ espa_modis ]
   cmd: convert_modis_to_espa
   args:
-    - "--hdf": "$hdf_filename"
+    - "--hdf": "{product_id}.hdf"
   outputs:
     - "*sur_refl_b*.img"
     - "*NDVI.img"
@@ -219,9 +230,10 @@ modis_to_espa:
 # Convert from our internal ESPA/ENVI format to GeoTIFF
 gtiff:
   cmd: convert_espa_to_gtif
+  products: [ gtif ]
   args:
     - "--xml": "{product_id}.xml"
-    - "--gtif": "$gtiff_name"
+    - "--gtif": "{product_id}.tif"
     - "--del_src_files": null
   outputs:
     - "*.tif"
@@ -229,6 +241,7 @@ gtiff:
 # Convert from our internal ESPA/ENVI format to HDF
 hdf-eos2:
   cmd: convert_espa_to_hdf
+  products: [ hdf ]
   args:
     - "--xml": "{product_id}.xml"
     - "--hdf": "$hdf_name"
@@ -239,6 +252,7 @@ hdf-eos2:
 # Convert from our internal ESPA/ENVI format to NetCDF
 netcdf:
   cmd: convert_espa_to_netcdf
+  products: [ netcdf ]
   args:
     - "--xml": "{product_id}.xml"
     - "--netcdf": "$netcdf_name"
