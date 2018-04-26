@@ -13,6 +13,10 @@ install:
 - pip install codecov
 script:
 - "pytest --cov=./"
+#    pylint --rcfile=.pylintrc api -f parseable -r n && \
+#    mypy --silent-imports api && \
+#    pycodestyle api --max-line-length=120 && \
+#    pydocstyle api
 after_success:
 - codecov
 - docker-compose -f test/docker-compose.yaml down
