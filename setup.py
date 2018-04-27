@@ -35,6 +35,7 @@ setup(name='espa-processing',
           'addict',
           'python-dateutil',
           'espa-python-library==1.1.0',
+          'humanize',
       ],
       dependency_links=[
           'git+https://github.com/USGS-EROS/espa-python-library.git@v1.1.0#egg=espa-python-library-1.1.0',

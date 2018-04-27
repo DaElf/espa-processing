@@ -26,11 +26,12 @@ def dirs_to_make(base_work_dir, directories=['output', 'stage', 'work']):
     return [os.path.join(base_work_dir, f) for f in directories]
 
 
-def initialize_processing_directory(base_work_dir, directories=['output', 'stage', 'work']):
+def initialize_processing_directory(base_work_dir, bucket_name, directories=['output', 'stage', 'work']):
     """ Initializes the processing directory and subfolders
 
     Args:
         base_work_dir (str): relative or absolute path to base working directory
+        bucket_name (str): additional subdirectory to work in
         directories (list): all subfolders to create undir base dir
 
     Returns:
@@ -41,10 +42,11 @@ def initialize_processing_directory(base_work_dir, directories=['output', 'stage
         logging.warning('Removing processing directory: %s', base_work_dir)
         shutil.rmtree(base_work_dir, ignore_errors=True)
 
-    logging.info('Create processing directory: %s', base_work_dir)
-    utilities.create_directory(base_work_dir)
+    new_directories['base'] = work_dir = os.path.join(base_work_dir, bucket_name)
+    logging.info('Create processing directory: %s', work_dir)
+    utilities.create_directory(work_dir)
 
-    for folder in dirs_to_make(base_work_dir, directories):
+    for folder in dirs_to_make(work_dir, directories):
         logging.debug('Create directory: %s', folder)
         utilities.create_directory(folder)
         new_directories.update({os.path.basename(folder): folder})

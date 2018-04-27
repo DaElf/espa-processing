@@ -4,6 +4,7 @@
 import os
 import sys
 import errno
+import shutil
 import datetime
 import shlex
 import resource
@@ -42,7 +43,7 @@ def peak_memory_usage(this=False):
         this (bool): Flag to instead get usage of this calling process (not including children)
 
     Returns:
-        usage (float): Usage in bytes
+        usage (float): Usage in mega-bytes
     """
     who = resource.RUSAGE_CHILDREN
     if this is True:
@@ -71,6 +72,7 @@ def current_disk_usage(pathname):
     return dirs_dict[pathname]
 
 
+from humanize import naturalsize as bytestr
 def snapshot_resources(log=True):
     """ Delivers (to logger) a current resource snapshot in JSON format
 
@@ -81,8 +83,8 @@ def snapshot_resources(log=True):
         dict: resource usage
     """
     resources = {
-        'current_disk_usage': current_disk_usage(os.getcwd()),
-        'peak_memory_usage': peak_memory_usage()
+        'current_disk_usage': bytestr(current_disk_usage(os.getcwd())),
+        'peak_memory_usage': bytestr(peak_memory_usage())
     }
     if log:
         logging.warning('Resources: {}'.format(resources))
@@ -109,8 +111,9 @@ def watch_stdout(cmd):
     process.stdout.close()
     process.wait()
     return {
+        'cmd': cmd,
         'status': process.returncode,
-        'output': '\n'.join(output)
+        'output': output
     }
 
 
@@ -196,6 +199,18 @@ def create_link(src_path, link_path):
             pass
         else:
             raise
+
+
+def remove_directory(directory):
+    """ Remove the specified directory with some error checking
+
+    Args:
+        directory (str): The full path to remove
+    """
+    try:
+        shutil.rmtree(directory)
+    except OSError as ose:
+        raise
 
 
 def untar_cmd(src, dest):

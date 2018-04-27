@@ -21,8 +21,8 @@ class Resource(object):
         try:
             if req.content_length:
                 body = json.load(req.stream)
-            resp.body = processor.process(cfg.get('processing', lower=True),
-                                          body)
+            exc = processor.process(cfg.get('processing', lower=True), body)
+            resp.body = exc
             resp.status = falcon.HTTP_200
         except Exception as exc:
             logging.error('Server Error: %s', exc.message)
