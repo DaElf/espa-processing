@@ -46,7 +46,7 @@ def from_file(section, config_file=None):
     """
     print('------')
     print('reading %s' % cfgfile(config_file))
-    print(open(cfgfile(config_file)).read())
+    print(open(cfgfile(config_file), 'rb').read())
     print('------')
     if not os.path.exists(cfgfile(config_file)):
         return {}
