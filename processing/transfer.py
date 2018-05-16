@@ -453,8 +453,6 @@ def transfer_file(source_host, source_file,
 ERROR = 1
 SUCCESS = 0
 
-URL = 'http://losrlost02.cr.usgs.gov:7480'
-
 
 def retrieve_aux_data(order_id):
     if order_id[2] == '8':
@@ -471,6 +469,12 @@ def retrieve_l8_aux_data(order_id):
     if auxdir is None:
         msg = 'L8_AUX_DIR environment variable not set... exiting'
         logger.error(msg)
+        return ERROR
+
+    # Get the bucket URL.
+    url_base = os.environ.get('S3URL')
+    if url_base is None:
+        logger.error('S3URL environment variable not set.')
         return ERROR
 
     # determine the directory for the output auxiliary data files to be
@@ -500,7 +504,7 @@ def retrieve_l8_aux_data(order_id):
             continue
 
         # Download the file.
-        url = '{}/LDCMLUT/{}'.format(URL, file)
+        url = '{}/LDCMLUT/{}'.format(url_base, file)
         dest_file = '{}/{}'.format(outputDir, file)
         download_file_url(url, dest_file)
 
@@ -515,7 +519,7 @@ def retrieve_l8_aux_data(order_id):
     os.makedirs(outputDir, 0777)
 
     # Download the file.
-    url = '{}/LADS/{}'.format(URL, aux_file)
+    url = '{}/LADS/{}'.format(url_base, aux_file)
     dest_file = '{}/{}'.format(outputDir, aux_file)
     download_file_url(url, dest_file)
 
@@ -523,14 +527,14 @@ def retrieve_l8_aux_data(order_id):
     aux_file = 'ratiomapndwiexp.hdf'
 
     # Download the file.
-    url = '{}/L8STUFF/{}'.format(URL, aux_file)
+    url = '{}/L8STUFF/{}'.format(url_base, aux_file)
     dest_file = '{}/{}'.format(auxdir, aux_file)
     download_file_url(url, dest_file)
 
     aux_file = 'CMGDEM.hdf'
 
     # Download the file.
-    url = '{}/CMGDEM/{}'.format(URL, aux_file)
+    url = '{}/CMGDEM/{}'.format(url_base, aux_file)
     dest_file = '{}/{}'.format(auxdir, aux_file)
     download_file_url(url, dest_file)
 
@@ -547,6 +551,12 @@ def retrieve_l47_aux_data(order_id):
         logger.error(msg)
         return ERROR
 
+    # Get the bucket URL.
+    url_base = os.environ.get('S3URL')
+    if url_base is None:
+        logger.error('S3URL environment variable not set.')
+        return ERROR
+
     # Get the NCEP REANALYSIS file.
     # Pull the date from the order ID to determine which auxiliary
     # file should be used for input.
@@ -558,7 +568,7 @@ def retrieve_l47_aux_data(order_id):
     os.makedirs(outputDir, 0777)
 
     # Download the file.
-    url = '{}/REANALYSIS/{}'.format(URL, aux_file)
+    url = '{}/REANALYSIS/{}'.format(url_base, aux_file)
     dest_file = '{}/{}'.format(outputDir, aux_file)
     download_file_url(url, dest_file)
 
@@ -570,7 +580,7 @@ def retrieve_l47_aux_data(order_id):
     os.makedirs(outputDir, 0777)
 
     # Download the file.
-    url = '{}/EP_TOMS/{}'.format(URL, aux_file)
+    url = '{}/EP_TOMS/{}'.format(url_base, aux_file)
     dest_file = '{}/{}'.format(outputDir, aux_file)
     download_file_url(url, dest_file)
 
@@ -578,7 +588,7 @@ def retrieve_l47_aux_data(order_id):
     aux_file = 'CMGDEM.hdf'
 
     # Download the file.
-    url = '{}/CMGDEM/{}'.format(URL, aux_file)
+    url = '{}/CMGDEM/{}'.format(url_base, aux_file)
     dest_file = '{}/{}'.format(auxdir, aux_file)
     download_file_url(url, dest_file)
 
