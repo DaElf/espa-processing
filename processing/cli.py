@@ -981,7 +981,8 @@ def main():
         order = update_template(args=args, template=template)
 
         # Retrieve all of the required auxiliary data.
-        transfer.retrieve_aux_data(args.order_id)
+        if transfer.retrieve_aux_data(args.order_id) != 0:
+            raise CliException('Failed to retrieve auxiliary data.')
 
         # Change to the processing directory
         current_directory = os.getcwd()

@@ -456,9 +456,9 @@ SUCCESS = 0
 
 def retrieve_aux_data(order_id):
     if order_id[2] == '8':
-        retrieve_l8_aux_data(order_id)
+        return retrieve_l8_aux_data(order_id)
     else:
-        retrieve_l47_aux_data(order_id)
+        return retrieve_l47_aux_data(order_id)
 
 
 def retrieve_l8_aux_data(order_id):
