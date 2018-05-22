@@ -2,6 +2,7 @@
 set -x
 
 REPOS="\
+     espa-product-formatter \
      espa-python-library \
      espa-l2qa-tools \
      espa-spectral-indices \
@@ -14,16 +15,21 @@ REPOS="\
      espa-processing"
 
 
-     #espa-product-formatter \
 
-for repo in $REPOS; do
+for repo in $REPOS_NOT; do
 #    mkdir -p $repo/SOURCES $repo/SPECS
     #    (cd $repo/SPECS; rpmdev-newspec $repo)
     (cd $repo; \
      git clone https://github.com/USGS-EROS/$repo;
      cd $repo;
       git archive --format=tar.gz -o ../SOURCES/$repo.tar.gz --prefix=$repo-1.0/ master)
-     
+
+done
+
+for repo in $REPOS; do
+    (cd $repo; \
+     rpmbuild --define "_topdir $(pwd)" -bs SPECS/$repo.spec; \
+     sudo mock --no-clean  --old-chroot  -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm)
 done
 
 #     sudo mock --no-clean  --old-chroot  -r my-epel-7-x86_64 SRPMS/espa-product-formatter-1.0-1.el7.centos.src.rpm
