@@ -1,0 +1,21 @@
+diff --git a/make.config b/make.config
+index 57d4638..136f518 100644
+--- a/make.config
++++ b/make.config
+@@ -7,11 +7,11 @@ prefix = $(PREFIX)
+ 
+ # Must allways be $(PREFIX)/bin because installation depends on it
+ # Only placed here because it is a common location for all makefiles
+-bin_link_path = $(PREFIX)/bin
+-lib_link_path = $(PREFIX)/lib
+-inc_link_path = $(PREFIX)/include
+-python_link_path = $(PREFIX)/python
+-schema_link_path = $(PREFIX)/schema
++bin_link_path ?= $(PREFIX)/bin
++lib_link_path ?= $(PREFIX)/lib
++inc_link_path ?= $(PREFIX)/include
++python_link_path ?= $(PREFIX)/python
++schema_link_path ?= $(PREFIX)/schema
+ 
+ # If BUILD_STATIC is not defined then shared compilation and linking
+ # will be performed
