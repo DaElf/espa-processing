@@ -18,13 +18,6 @@ BuildRequires: python-setuptools
 %description
 ESPA python library
 
-%package -n python2-%{srcname}
-Summary:        %{summary}
-%{?python_provide:%python_provide python2-%{srcname}}
-
-%description -n python2-%{srcname}
-ESPA python library
-
 
 %package -n python3-%{srcname}
 Summary:        %{summary}
@@ -48,15 +41,13 @@ ESPA python library
 %py3_install
 
 
-%files -n python2-%{srcname}
+%files
 %doc README.md
 %{python_sitelib}/*
 
 %files -n python3-%{srcname}
 %doc README.md
 %{python3_sitelib}/*
-%files
-
 
 
 %changelog
