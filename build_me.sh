@@ -29,7 +29,11 @@ done
 for repo in $REPOS; do
     (cd $repo; \
      rpmbuild --define "_topdir $(pwd)" -bs SPECS/$repo.spec; \
-     sudo mock --no-clean  --old-chroot  -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm)
+     sudo mock --no-clean --old-chroot -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm)
+done
+
+for repo in $REPOS_NOT; do
+    git submodule add https://github.com/USGS-EROS/$repo
 done
 
 #     sudo mock --no-clean  --old-chroot  -r my-epel-7-x86_64 SRPMS/espa-product-formatter-1.0-1.el7.centos.src.rpm
