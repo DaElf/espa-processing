@@ -8,8 +8,18 @@ License:	NASA Open Source Agreement
 URL:            https://github.com/USGS-EROS/espa-processing
 Source0:        espa-processing.tar.gz
 
+Requires:       espa-elevation
+Requires:       espa-l2qa-tools
+Requires:       espa-plotting
+Requires:       espa-processing
 Requires:       espa-product-formatter
-Requires:       espa-product-formatter-devel
+Requires:       espa-python-library
+Requires:       espa-reprojection
+Requires:       espa-spectral-indices
+Requires:       espa-surface-reflectance
+Requires:       espa-surface-temperature
+Requires:       espa-surface-water-extent
+
 
 %description
 %summary
