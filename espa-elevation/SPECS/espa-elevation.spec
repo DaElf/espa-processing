@@ -9,6 +9,11 @@ URL:            https://github.com/USGS-EROS/espa-elevation
 Source0:        espa-elevation.tar.gz
 
 BuildRequires: python-espa
+Requires:      python-espa
+Requires:      numpy
+Requires:      gdal
+Requires:      python-lxml
+
 
 %description
 ESPA elevation
