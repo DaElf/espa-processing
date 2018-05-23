@@ -13,12 +13,16 @@ Requires:       espa-l2qa-tools
 Requires:       espa-plotting
 Requires:       espa-processing
 Requires:       espa-product-formatter
-Requires:       espa-python-library
 Requires:       espa-reprojection
 Requires:       espa-spectral-indices
 Requires:       espa-surface-reflectance
 Requires:       espa-surface-temperature
 Requires:       espa-surface-water-extent
+Requires:       python-lxml
+Requires:       python-espa
+Requires:       python-requests
+Requires:       python-boto3
+Requires:       python-gdal
 
 
 %description
