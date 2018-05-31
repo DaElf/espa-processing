@@ -1,5 +1,6 @@
 #!/usr/bin/sh
 set -x
+set -e
 
 REPOS="\
      espa-product-formatter \
@@ -29,7 +30,8 @@ done
 for repo in $REPOS; do
     (cd $repo; \
      rpmbuild --define "_topdir $(pwd)" -bs SPECS/$repo.spec; \
-     sudo mock --no-clean --old-chroot -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm)
+     sudo mock --no-clean --old-chroot --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm)
+     ./copy_rpms.sh
 done
 
 for repo in $REPOS_NOT; do
