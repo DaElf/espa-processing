@@ -384,12 +384,9 @@ def s3_transfer_file(s3_url, destination_file):
     '''
 
     logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
+    logger.info(s3_url)
 
-    try:
-        aws_region = os.environ['AWSRegion']
-    except KeyError:
-        aws_region = 'us-west-2'
-    s3 = boto3.client('s3', region_name=aws_region)
+    s3 = boto3.client('s3')
 
     s3_bucket_file = s3_url.replace('s3://', '', 1)
     s3_list = s3_bucket_file.split('/')
