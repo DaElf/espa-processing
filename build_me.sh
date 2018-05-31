@@ -2,6 +2,40 @@
 set -x
 set -e
 
+pushd /efs;
+python -m SimpleHTTPServer 9000 &
+pid=$! ;  echo "simple server pid $pid"
+popd
+
+process_repos () {
+for repo in $1; do
+    (cd $repo; \
+     rpmbuild --define "_topdir $(pwd)" -bs SPECS/*.spec \
+     && sudo mock $old_chroot --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm \
+     && find ./ -name \*.x86_64.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \; \
+     && createrepo $root/CentOS/7/local/x86_64 \
+     )
+done
+}
+
+REPOS_no="\
+	geotiff \
+	hdf4 \
+	HDF-EOS \
+	gdal"
+
+REPOS="\
+	geotiff"
+
+# for building inside a docker container
+#old_chroot="--no-clean --old-chroot" 
+old_chroot=""
+root=/efs
+
+pushd ../../ips-all/ips_rpmbuild/
+process_repos "$REPOS"
+popd
+
 REPOS="\
      espa-product-formatter \
      espa-python-library \
@@ -15,29 +49,6 @@ REPOS="\
      espa-plotting \
      espa-processing"
 
-
-
-for repo in $REPOS_NOT; do
-#    mkdir -p $repo/SOURCES $repo/SPECS
-    #    (cd $repo/SPECS; rpmdev-newspec $repo)
-    (cd $repo; \
-     git clone https://github.com/USGS-EROS/$repo;
-     cd $repo;
-      git archive --format=tar.gz -o ../SOURCES/$repo.tar.gz --prefix=$repo-1.0/ master)
-
-done
-
-for repo in $REPOS; do
-    (cd $repo; \
-     rpmbuild --define "_topdir $(pwd)" -bs SPECS/$repo.spec; \
-     sudo mock --no-clean --old-chroot --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm)
-     ./copy_rpms.sh
-done
-
-for repo in $REPOS_NOT; do
-    git submodule add https://github.com/USGS-EROS/$repo
-done
-
-#     sudo mock --no-clean  --old-chroot  -r my-epel-7-x86_64 SRPMS/espa-product-formatter-1.0-1.el7.centos.src.rpm
-
-#(cd espa-product-formatter; git archive --format=tar.gz -o ../SOURCES/espa-product-formatter.tar.gz --prefix=espa-product-formatter-1.0/ master)
+process_repos "$REPOS"
+kill $pid
+exit
