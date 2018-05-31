@@ -7,18 +7,24 @@ Group:		ESPA
 License:	NASA Open Source Agreement
 URL:            https://github.com/USGS-EROS/espa-surface-temperature
 Source0:        espa-surface-temperature.tar.gz
+Patch0:         fix_InvGeoTransform.patch
 
 BuildRequires: libxml2-devel
 BuildRequires: pkgconfig
 BuildRequires: HDF-EOS
+Requires: HDF-EOS
 BuildRequires: espa-product-formatter
+Requires: espa-product-formatter
 BuildRequires: espa-product-formatter-devel
+Requires: wgrib
+Requires: wgrib2
 
 %description
 ESPA surface temperature
 
 %prep
 %setup -q
+%patch0 -p1 -b .InvGeoTransform
 
 
 %build

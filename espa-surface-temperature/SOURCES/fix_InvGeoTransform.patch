@@ -1,0 +1,12 @@
+diff -ru espa-surface-temperature-1.0.o/provisional-st/scripts/st_utilities.py espa-surface-temperature-1.0/provisional-st/scripts/st_utilities.py
+--- espa-surface-temperature-1.0.o/provisional-st/scripts/st_utilities.py	2018-04-02 13:46:30.000000000 +0000
++++ espa-surface-temperature-1.0/provisional-st/scripts/st_utilities.py	2018-05-31 18:05:55.970000000 +0000
+@@ -307,7 +307,7 @@
+         """Translate map coordinates into image coordinates"""
+ 
+         # Convert the transform from image->map to map->image
+-        (success, inv_transform) = gdal.InvGeoTransform(transform)
++        inv_transform = gdal.InvGeoTransform(transform)
+ 
+         image_x = (inv_transform[0] +
+                    map_x * inv_transform[1] +
