@@ -11,6 +11,7 @@ import ftplib
 import urllib2
 import requests
 import random
+import boto3
 from time import sleep
 import fnmatch
 
@@ -375,6 +376,37 @@ def http_transfer_file(download_url, destination_file):
     logger.info("Transfer Complete - HTTP")
 
 
+def s3_transfer_file(s3_url, destination_file):
+    '''
+    Description:
+      Transfer a file from an s3 bucket to a destination
+      file on the localhost.
+    '''
+
+    logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
+
+    try:
+        aws_region = os.environ['AWSRegion']
+    except KeyError:
+        aws_region = 'us-west-2'
+    s3 = boto3.client('s3', region_name=aws_region)
+
+    s3_bucket_file = s3_url.replace('s3://', '', 1)
+    s3_list = s3_bucket_file.split('/')
+    if len(s3_list) <= 1:
+        logger.error('Transfer Failed - S3')
+        raise Exception('Invalid S3 URL: ' + s3_url)
+    s3_bucket = s3_list[0]
+    s3_key = s3_bucket_file.replace(s3_bucket + '/', '', 1)
+    try:
+        s3.download_file(s3_bucket, s3_key, destination_file)
+    except Exception as excep:
+        logger.error('Transfer Failed - S3 ')
+        raise
+
+    logger.info("Transfer Complete - S3")
+
+
 def download_file_url(download_url, destination_file):
     '''
     Description:
@@ -388,6 +420,8 @@ def download_file_url(download_url, destination_file):
     elif download_url.startswith('file://'):
         source_file = download_url.replace('file://', '')
         transfer_file('localhost', source_file, 'localhost', destination_file)
+    elif download_url.startswith('s3://'):
+        s3_transfer_file(download_url, destination_file)
     else:
         raise Exception("Transfer Failed -"
                         " Unknown URL transport protocol [%s]"
