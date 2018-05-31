@@ -18,6 +18,7 @@ Requires: espa-product-formatter
 BuildRequires: espa-product-formatter-devel
 Requires: wgrib
 Requires: wgrib2
+Requires: scipy
 
 %description
 ESPA surface temperature
