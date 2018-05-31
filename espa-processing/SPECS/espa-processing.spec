@@ -21,7 +21,7 @@ Requires:       espa-surface-water-extent
 Requires:       python-lxml
 Requires:       python-espa
 Requires:       python-requests
-Requires:       python-boto3
+Requires:       python2-boto3
 Requires:       python-gdal
 
 
