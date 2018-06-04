@@ -62,7 +62,7 @@ def test_fetch_requires_nested():
 
 def test_lpgs_to_espa(lsat_id, provider_path):
     product = 'espa_landsat'
-    cmd = 'convert_lpgs_to_espa --mtl {}.MTL'.format(lsat_id)
+    cmd = 'convert_lpgs_to_espa --mtl {}_MTL.txt'.format(lsat_id)
     assert providers.sequence(product, product_id=lsat_id) == cmd
 
 def test_toa_command(lsat_id, provider_path):
