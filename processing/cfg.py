@@ -44,10 +44,6 @@ def from_file(section, config_file=None):
     Returns:
         dict: current configuration
     """
-    print('------')
-    print('reading %s' % cfgfile(config_file))
-    print(open(cfgfile(config_file), 'rb').read())
-    print('------')
     if not os.path.exists(cfgfile(config_file)):
         return {}
     config = ConfigParser.ConfigParser()
