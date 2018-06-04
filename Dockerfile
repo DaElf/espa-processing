@@ -1,6 +1,6 @@
 
 # ==========+ Source Code dependencies +==========
-FROM usgseros/espa-dockerfiles:topic-espa-evolution-1.0rc1.dev1 as application
+FROM usgseros/espa-dockerfiles:docker-devel-3.0rc1.dev1 as application
 
 RUN useradd espadev
 RUN mkdir -p /var/log/uwsgi /home/espadev/espa-processing \

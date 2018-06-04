@@ -23,10 +23,11 @@ after_success:
 deploy:
   - provider: script
     script: make docker-deploy
-#     on:
-#       branch:
-#         - master
-#         - devel
+    on:
+      branch:
+        - master
+        - develop
+        - docker-devel
 notifications:
   email:
     on_success: never
