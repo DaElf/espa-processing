@@ -136,7 +136,7 @@ def execute_cmd(cmd, workdir=None):
         cparts = shlex.split(cmd)
     results = watch_stdout(cparts)
 
-    message = ''
+    message = None
     if results['status'] < 0:
         message = 'Application terminated by signal [{}]'.format(cmd)
 
@@ -148,11 +148,8 @@ def execute_cmd(cmd, workdir=None):
                    .format(cmd, os.WEXITSTATUS(results['status'])))
 
     os.chdir(current_dir)
-    if len(message) > 0:
-        if len(results['output']) > 0:
-            # Add the output to the exception message
-            message = ' Stdout/Stderr is: '.join([message, results['output']])
-        logging.error(message)
+    if message is not None:
+        logging.error('%s Stdout/Stderr is: %s', message, results['output'])
 
     return results
 

@@ -4,11 +4,11 @@
 
 [![Build Status][tb]][tt] [![Codecov branch][cb]][cc] [![Docker Pulls][db]][dh] [![GitHub release][gb]][gr]
 
-[tb]: https://img.shields.io/travis/jakebrinkmann/lagoon-emperor-penguin/devel.svg?style=flat-square
-[tt]: https://travis-ci.org/jakebrinkmann/lagoon-emperor-penguin
-[db]: https://img.shields.io/docker/automated/jbrinkmann/lagoon-emperor-penguin.svg?style=flat-square
-[dh]: https://hub.docker.com/r/jbrinkmann/lagoon-emperor-penguin/tags/
-[cb]: https://img.shields.io/codecov/c/github/jakebrinkmann/lagoon-emperor-penguin/devel.svg?style=flat-square
-[cc]: https://codecov.io/github/jakebrinkmann/lagoon-emperor-penguin/
-[gb]: https://img.shields.io/github/release/jakebrinkmann/lagoon-emperor-penguin.svg?style=flat-square
-[gr]: https://github.com/jakebrinkmann/lagoon-emperor-penguin/releases
+[tb]: https://img.shields.io/travis/USGS-EROS/espa-processing/devel.svg?style=flat-square
+[tt]: https://travis-ci.org/USGS-EROS/espa-processing
+[db]: https://img.shields.io/docker/automated/usgseros/espa-processing.svg?style=flat-square
+[dh]: https://hub.docker.com/r/usgseros/espa-processing/tags/
+[cb]: https://img.shields.io/codecov/c/github/USGS-EROS/espa-processing/devel.svg?style=flat-square
+[cc]: https://codecov.io/github/USGS-EROS/espa-processing/
+[gb]: https://img.shields.io/github/release/USGS-EROS/espa-processing.svg?style=flat-square
+[gr]: https://github.com/USGS-EROS/espa-processing/releases
