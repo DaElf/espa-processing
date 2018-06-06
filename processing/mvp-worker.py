@@ -1,0 +1,223 @@
+#! /usr/bin/env python
+
+
+import os
+import sys
+import shutil
+import socket
+import json
+import boto3
+
+
+import settings
+import utilities as util
+import config_utils as config
+from logging_tools import EspaLogging
+import processor
+import transfer
+
+
+APP_NAME = 'ESPA-Processing-Worker'
+VERSION = '2.23.0.1'
+
+def cli_log_filename(order):
+    """Specifies the log filename
+
+    Args:
+        order <dict>: order parameters
+    """
+
+    orderid = order['orderid']
+    product_id = order['product_id']
+    return 'cli-{}-{}.log'.format(orderid, product_id)
+
+
+def cli_log_setup(order):
+
+    # Configure the base logger for this request
+    EspaLogging.configure_base_logger(filename=cli_log_filename(order))
+    # Configure the processing logger for this request
+    EspaLogging.configure(settings.PROCESSING_LOGGER,
+                          order=order['orderid'],
+                          product=order['product_id'],
+                          debug=order['options']['debug'])
+    # Get a logger
+    logger = EspaLogging.get_logger('base')
+
+    return logger
+
+
+def export_environment_variables(cfg):
+    """Export the configuration to environment variables
+
+    Supporting applications require them to be in the environmant
+
+    Args:
+        cfg <ConfigParser>: Configuration
+    """
+
+    for key, value in cfg.items('processing'):
+        os.environ[key.upper()] = value
+
+
+def override_config(order, proc_cfg):
+    """Override configuration with command line values
+
+    Args:
+        order <dict>: Order parameters
+        proc_cfg <ConfigParser>: Configuration
+
+    Returns:
+        <ConfigParser>: Configuration updated (not a copy)
+    """
+
+    # Just pretending to be immutable, can't deepcopy ConfigParser
+    cfg = proc_cfg
+
+    if order['work_dir'] is not None:
+        cfg.set('processing', 'espa_work_dir', order['work_dir'])
+
+    if order['dist_method'] is not None:
+        cfg.set('processing', 'espa_distribution_method', order['dist_method'])
+
+    if order['dist_dir'] is not None:
+        cfg.set('processing', 'espa_distribution_dir', order['dist_dir'])
+
+    return cfg
+
+
+def copy_log_file(log_name, destination_path, proc_status):
+    """Copy the log file
+
+    Args:
+        log_name <str>: Relative path to the log file
+        destination_path <str>: Location to copy the log file
+        proc_status <bool>: True = Success, False = Error
+
+    Note: proc_status is passed in to allow for the modification of the
+          archive filename for the log.  It is meant to mean that processing
+          of the scene was successful(True) or not(False).  Allowing users to
+          more easily find scenes with failures when looking in the archive
+          log directory.
+    """
+
+    abs_log_path = os.path.abspath(log_name)
+    if proc_status:
+        base_log_name = 'success-{}'.format(os.path.basename(log_name))
+    else:
+        base_log_name = 'error-{}'.format(os.path.basename(log_name))
+
+    # Determine full destination
+    destination_file = os.path.join(destination_path, base_log_name)
+
+    # Copy it
+    shutil.copyfile(abs_log_path, destination_file)
+
+
+def archive_log_files(order, proc_cfg, proc_status):
+    """Archive the log files for the current execution
+
+    Args:
+        order <dict>: Command line arguments
+        proc_cfg <ConfigParser>: Configuration
+        proc_status <bool>: True = Success, False = Error
+    """
+
+    base_log = cli_log_filename(order)
+    proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
+    dist_path = proc_cfg.get('processing', 'espa_log_archive')
+    destination_path = os.path.join(dist_path, order['orderid'])
+
+    # Create the archive path
+    util.create_directory(destination_path)
+
+    # Copy them
+    copy_log_file(base_log, destination_path, proc_status)
+    copy_log_file(proc_log, destination_path, proc_status)
+
+    # Remove the source versions
+    if os.path.exists(base_log):
+        os.unlink(base_log)
+
+    if os.path.exists(proc_log):
+        os.unlink(proc_log)
+
+def get_messages_from_sqs():
+    queue = sqs.get_queue_by_name(QueueName=sqsqueue_name)
+    message = queue.receive_messages(VisibilityTimeout=120,
+            WaitTimeSeconds=20,
+            MaxNumberOfMessages=1)
+    return(message)
+
+
+PROC_CFG_FILENAME = 'processing.conf'
+try:
+    sqsqueue_name = os.environ['SQSBatchQueue']
+except KeyError as e:
+    print("Error: environment variable SQSBatchQueue not defined")
+    exit(1)
+
+try:
+    aws_region = os.environ['AWSRegion']
+except KeyError:
+    s3 = boto3.client('s3')
+    sqs = boto3.resource('sqs')
+else:
+    s3 = boto3.client('s3', region_name=aws_region)
+    sqs = boto3.resource('sqs', region_name=aws_region)
+
+
+def main():
+    """Get a JSON file with details about an order from
+       the SQS queue and process the order
+    """
+
+    current_directory = os.getcwd()
+
+    for message in get_messages_from_sqs():
+        try:
+            order = json.loads(message.body)
+            order_id = order['orderid']
+            # JDC Debug
+            print("Got order " + order_id)
+
+            logger = cli_log_setup(order)
+            logger.info('*** Begin ESPA Processing on host [{}] ***'
+                        .format(socket.gethostname()))
+            logger.info('Order ID [{}]'.format(order_id))
+
+            proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
+            proc_cfg = override_config(order, proc_cfg)
+            export_environment_variables(proc_cfg)
+
+            # Retrieve all of the required auxiliary data.
+            if "S3URL" in os.environ:
+                if transfer.retrieve_aux_data(order_id) != 0:
+                    raise CliException('Failed to retrieve auxiliary data.')
+
+            # Change to the processing directory
+            os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
+
+            try:
+                # All processors are implemented in the processor module
+                pp = processor.get_instance(proc_cfg, order)
+                (destination_product_file, destination_cksum_file) = pp.process()
+            finally:
+                # Change back to the previous directory
+                os.chdir(current_directory)
+
+        except Exception as e:
+            print(e)
+            logger.exception('*** Errors during processing ***')
+            sys.exit(1)
+
+        finally:
+            message.delete()
+            logger.info('*** ESPA Processing Complete ***')
+
+            if not order['bridge_mode']:
+                archive_log_files(order, proc_cfg, proc_status)
+
+
+if __name__ == '__main__':
+    main()
