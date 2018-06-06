@@ -37,6 +37,7 @@ process_repos "$REPOS"
 popd
 
 REPOS="\
+     espa-cloud-masking \
      espa-product-formatter \
      espa-python-library \
      espa-l2qa-tools \
