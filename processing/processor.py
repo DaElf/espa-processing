@@ -1042,6 +1042,8 @@ class LandsatProcessor(CDRProcessor):
             output = ''
             try:
                 output = utilities.execute_cmd(cmd)
+            except:
+                self._logger.error(sys.exc_info()[0])
             finally:
                 if len(output) > 0:
                     self._logger.info(output)
