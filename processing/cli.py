@@ -995,6 +995,9 @@ def main():
             if not os.path.isdir(espa_work_dir):
                 raise
 
+        if args.debug:
+            print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
+
         try:
             # All processors are implemented in the processor module
             pp = processor.get_instance(proc_cfg, order)
