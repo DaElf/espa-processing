@@ -987,7 +987,13 @@ def main():
 
         # Change to the processing directory
         current_directory = os.getcwd()
-        os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
+        try:
+            espa_work_dir = proc_cfg.get('processing', 'espa_work_dir')
+            os.makedirs(espa_work_dir)
+            os.chdir(espa_work_dir)
+        except OSError:
+            if not os.path.isdir(espa_work_dir):
+                raise
 
         try:
             # All processors are implemented in the processor module
