@@ -18,6 +18,7 @@ Requires:       espa-spectral-indices
 Requires:       espa-surface-reflectance
 Requires:       espa-surface-temperature
 Requires:       espa-surface-water-extent
+Requires:       espa-cloud-masking
 Requires:       python-lxml
 Requires:       python-espa
 Requires:       python-requests
