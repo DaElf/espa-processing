@@ -9,4 +9,5 @@ setup(
     include_package_data=False,
     install_requires=["requests"],
     scripts=["scripts/espa-process"],
+    data_files=[('share/espa', [ 'processing/order_template.json']),],
 )
