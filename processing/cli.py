@@ -1015,7 +1015,7 @@ def main():
         sys.exit(1)
 
     finally:
-        logger.info('*** ESPA Processing Terminated ***')
+        logger.info('*** ESPA Processing Completed ***')
 
         if not args.bridge_mode:
             archive_log_files(args, proc_cfg, proc_status)
