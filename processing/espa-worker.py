@@ -9,12 +9,12 @@ import json
 import boto3
 
 
-import settings
-import utilities as util
-import config_utils as config
-from logging_tools import EspaLogging
-import processor
-import transfer
+import espa_processing.settings as settings
+import espa_processing.utilities as util
+import espa_processing.config_utils as config
+from espa_processing.logging_tools import EspaLogging
+import espa_processing.processor as processor
+import espa_processing.transfer as transfer
 
 
 APP_NAME = 'ESPA-Processing-Worker'
@@ -142,7 +142,65 @@ def archive_log_files(order, proc_cfg, proc_status):
     if os.path.exists(proc_log):
         os.unlink(proc_log)
 
-def get_messages_from_sqs():
+
+def process_order(order):
+    """Process the order
+
+    Args:
+        order <dict>: the order to be processed
+    """
+
+    current_directory = os.getcwd()
+
+    try:
+        order_id = order['orderid']
+        logger = cli_log_setup(order)
+        logger.info('*** Begin ESPA Processing on host [{}] ***'
+                    .format(socket.gethostname()))
+        logger.info('Order ID [{}]'.format(order_id))
+
+        proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
+        proc_cfg = override_config(order, proc_cfg)
+        export_environment_variables(proc_cfg)
+
+        # Retrieve all of the required auxiliary data.
+        if "S3URL" in os.environ:
+            if transfer.retrieve_aux_data(order_id) != 0:
+                raise CliException('Failed to retrieve auxiliary data.')
+
+        # Change to the processing directory
+        os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
+
+        try:
+            # All processors are implemented in the processor module
+            pp = processor.get_instance(proc_cfg, order)
+            (destination_product_file, destination_cksum_file) = pp.process()
+        finally:
+            # Change back to the previous directory
+            os.chdir(current_directory)
+
+    except Exception as e:
+       print(e)
+       logger.exception('*** Errors during processing ***')
+
+    finally:
+        if logger:
+            logger.info('*** ESPA Processing Complete ***')
+
+        if not order['bridge_mode']:
+            archive_log_files(order, proc_cfg, proc_status)
+
+    # JDC XXX
+    #    Close log file so it starts over when the next job runs
+
+
+def get_message_from_sqs():
+    """Read a message from the SQS queue
+
+    Returns:
+        message <list>: A list of messages that were read
+    """
+
     queue = sqs.get_queue_by_name(QueueName=sqsqueue_name)
     message = queue.receive_messages(VisibilityTimeout=120,
             WaitTimeSeconds=20,
@@ -172,51 +230,23 @@ def main():
        the SQS queue and process the order
     """
 
-    current_directory = os.getcwd()
+    while True:
+        message_list = get_message_from_sqs()
+        if len(message_list) == 0:
+            continue
+        message = message_list[0]
 
-    for message in get_messages_from_sqs():
         try:
             order = json.loads(message.body)
-            order_id = order['orderid']
             # JDC Debug
-            print("Got order " + order_id)
-
-            logger = cli_log_setup(order)
-            logger.info('*** Begin ESPA Processing on host [{}] ***'
-                        .format(socket.gethostname()))
-            logger.info('Order ID [{}]'.format(order_id))
-
-            proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
-            proc_cfg = override_config(order, proc_cfg)
-            export_environment_variables(proc_cfg)
-
-            # Retrieve all of the required auxiliary data.
-            if "S3URL" in os.environ:
-                if transfer.retrieve_aux_data(order_id) != 0:
-                    raise CliException('Failed to retrieve auxiliary data.')
-
-            # Change to the processing directory
-            os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
-
-            try:
-                # All processors are implemented in the processor module
-                pp = processor.get_instance(proc_cfg, order)
-                (destination_product_file, destination_cksum_file) = pp.process()
-            finally:
-                # Change back to the previous directory
-                os.chdir(current_directory)
-
+            print("Got order " + order['orderid'])
         except Exception as e:
             print(e)
-            logger.exception('*** Errors during processing ***')
-            sys.exit(1)
+            continue
 
-        finally:
-            message.delete()
-            logger.info('*** ESPA Processing Complete ***')
+        process_order(order)
 
-            if not order['bridge_mode']:
-                archive_log_files(order, proc_cfg, proc_status)
+        message.delete()
 
 
 if __name__ == '__main__':

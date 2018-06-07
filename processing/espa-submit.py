@@ -10,9 +10,9 @@ import boto3
 from argparse import ArgumentParser
 
 
-import settings
-import utilities as util
-import config_utils as config
+import espa_processing.settings
+import espa_processing.utilities as util
+import espa_processing.config_utils as config
 
 
 APP_NAME = 'ESPA-Processing'
