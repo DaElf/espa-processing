@@ -17,6 +17,7 @@ Requires: HDF-EOS
 BuildRequires: espa-product-formatter
 Requires: espa-product-formatter
 BuildRequires: espa-product-formatter-devel
+Requires: espa-processing
 Requires: wgrib
 Requires: wgrib2
 Requires: scipy
