@@ -8,6 +8,7 @@ License:	NASA Open Source Agreement
 URL:            https://github.com/USGS-EROS/espa-surface-temperature
 Source0:        espa-surface-temperature.tar.gz
 Patch0:         fix_InvGeoTransform.patch
+Patch1:         common_cfg.patch
 
 BuildRequires: libxml2-devel
 BuildRequires: pkgconfig
@@ -25,8 +26,8 @@ ESPA surface temperature
 
 %prep
 %setup -q
-%patch0 -p1 -b .InvGeoTransform
-
+%patch0 -p1 -b .InvGeoTranmsform
+%patch1 -p1 -b .common_cfg
 
 %build
 export PREFIX=%{_prefix}
