@@ -11,7 +11,8 @@ import os
 
 
 import utilities
-from environment import Environment, DISTRIBUTION_METHOD_LOCAL
+from environment import (Environment, DISTRIBUTION_METHOD_LOCAL,
+    DISTRIBUTION_METHOD_REMOTE, DISTRIBUTION_METHOD_S3)
 
 
 def __create_local_directory(base_path, directory_name):

@@ -118,7 +118,7 @@ def build_command_line_parser():
                           action='store',
                           dest='dist_method',
                           required=False,
-                          choices=['local', 'remote'],
+                          choices=['local', 'remote', 's3'],
                           default='local',
                           metavar='TEXT',
                           help='Distribution method')

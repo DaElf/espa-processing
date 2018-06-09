@@ -13,7 +13,8 @@ import glob
 import settings
 import utilities
 from logging_tools import EspaLogging
-from environment import Environment, DISTRIBUTION_METHOD_LOCAL
+from environment import (Environment, DISTRIBUTION_METHOD_LOCAL,
+                             DISTRIBUTION_METHOD_REMOTE, DISTRIBUTION_METHOD_S3)
 import transfer
 
 
