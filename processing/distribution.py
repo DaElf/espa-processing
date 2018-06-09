@@ -7,11 +7,15 @@ License: NASA Open Source Agreement 1.3
 
 
 import os
+import os.path
 import sys
 import shutil
 import glob
 from time import sleep
 import boto3
+from urlparse import urlparse
+from subprocess import check_output, CalledProcessError, check_call
+from simple_sum import distribute_sum_directory
 
 import settings
 import utilities
@@ -79,6 +83,9 @@ def package_product(immutability, source_directory, destination_directory,
     # Change to the source directory
     current_directory = os.getcwd()
     os.chdir(source_directory)
+
+    # Use current dir here since we do not want the full path in the sha256sum result
+    distribute_sum_directory('.')
 
     try:
         # Tar the files
