@@ -85,7 +85,7 @@ def package_product(immutability, source_directory, destination_directory,
     os.chdir(source_directory)
 
     # Use current dir here since we do not want the full path in the sha256sum result
-    distribute_sum_directory('.')
+    distribute_sum_directory('.', product_name)
 
     try:
         # Tar the files
