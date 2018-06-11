@@ -105,13 +105,13 @@ def package_product(immutability, source_directory, destination_directory,
         os.chmod(product_full_path, 0644)
 
         # Verify that the archive is good
-        output = ''
-        cmd = ' '.join(['tar', '-tf', product_full_path])
-        try:
-            output = utilities.execute_cmd(cmd)
-        finally:
-            if len(output) > 0:
-                logger.info(output)
+#        output = ''
+#        cmd = ' '.join(['tar', '-tf', product_full_path])
+#        try:
+#            output = utilities.execute_cmd(cmd)
+#        finally:
+#            if len(output) > 0:
+#                logger.info(output)
 
         # If it was good create a checksum file
         cksum_output = ''
