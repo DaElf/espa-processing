@@ -12,6 +12,7 @@ import commands
 import random
 import resource
 from collections import defaultdict
+from subprocess import check_output, CalledProcessError, check_call
 
 
 def date_from_year_doy(year, doy):
@@ -225,21 +226,20 @@ def tar_files(tarred_full_path, file_list, gzip=False):
         Exception(message)
     """
 
-    flags = '-cf'
+    flags = ['-cf']
     target = '%s.tar' % tarred_full_path
 
     # If zipping was chosen, change the flags and the target name
     if gzip:
-        flags = '-czf'
+        flags = ['--use-compress-program=pigz', '-cf']
         target = '%s.tar.gz' % tarred_full_path
 
-    cmd = ['tar', flags, target]
+    cmd = ['tar'] + flags + [target]
     cmd.extend(file_list)
-    cmd = ' '.join(cmd)
 
     output = ''
     try:
-        output = execute_cmd(cmd)
+        output = check_output(cmd)
     except Exception:
         msg = "Error encountered tar'ing file(s): Stdout/Stderr:"
         if len(output) > 0:
@@ -263,7 +263,7 @@ def gzip_files(file_list):
     """
 
     # Force the gzip file to overwrite any previously existing attempt
-    cmd = ['gzip', '--force']
+    cmd = ['pigz', '--force']
     cmd.extend(file_list)
     cmd = ' '.join(cmd)
 
