@@ -153,6 +153,14 @@ def build_command_line_parser():
                           metavar='TEXT',
                           help='S3 secret key')
 
+    specific.add_argument('--dist-s3-bucket',
+                          action='store',
+                          dest='dist_s3_bucket',
+                          required=False,
+                          default='lsds-level2-data',
+                          metavar='TEXT',
+                          help='Distribution AWS s3 bucket -- default lsds-level2-data')
+
     # ------------------------------------------------------------------------
     products = parser.add_argument_group('products')
 

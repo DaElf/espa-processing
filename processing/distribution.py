@@ -551,27 +551,23 @@ def distribute_statistics_local(immutability, product_id, source_path,
         os.chdir(current_directory)
 
 
-def distribute_product_s3(product_full_path, cksum_full_path, product_name):
+def distribute_product_s3(product_full_path, cksum_full_path, product_name, parms):
 
     logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
 
     s3 = boto3.resource('s3')
-#    o = urlparse(s3_dest_url)
-#    print(o)
-#    s3_bucket = s3.Bucket(o.netloc)
-#    key = o.path.lstrip('/')
-    s3_bucket = s3.Bucket('a.out')
+
+    s3_bucket = s3.Bucket(parms["dist_s3_bucket"])
+
     source_file =  product_full_path
-    key = "my-test/" +  product_name + '.tar.gz'
-    print("source_file: ", source_file)
-    logger.info("PUTTING: " + source_file + "\nTo: " + key)
-    print os.path.isfile(source_file)
+    logger.info('PUTTING: ' + source_file + "\nTo: " + parms["dist_s3_bucket"] + '/' + product_name + '.tar.gz')
+    #print os.path.isfile(source_file)
     try:
         s3_bucket.upload_file(source_file, product_name + '.tar.gz')
     except Exception as excep:
         logger.error('S3 PUT failed:' + source_file)
 
-    logger.info("S3 PUT completed")
+    logger.info("S3 PUT completed: " + source_file)
 
 
 def distribute_product_remote(immutability, product_name, source_path,
@@ -624,7 +620,7 @@ def distribute_product_remote(immutability, product_name, source_path,
             sub_attempt = 0
             while True:
                 try:
-                    distribute_product_s3(product_full_path, cksum_full_path, product_name)
+                    distribute_product_s3(product_full_path, cksum_full_path, product_name, parms)
 
                 except Exception:
                     logger.exception("An exception occurred processing %s"
@@ -861,6 +857,18 @@ def distribute_product(immutability, product_name, source_path,
                                       parms)
 
     elif distribution_method == DISTRIBUTION_METHOD_S3:
+        (product_file, cksum_file) = distribute_product_remote(immutability,
+                                            product_name,
+                                            source_path,
+                                            packaging_path,
+                                            cache_path,
+                                            parms)
+
+
+    elif distribution_method == DISTRIBUTION_METHOD_S3:
+        logger.info('product_name ' + product_name + ' source_path ' + source_path + ' packaging_path ' + packaging_path + ' cache_path ' + cache_path)
+        logger.info(immutability, parms)
+
         (product_file, cksum_file) = distribute_product_remote(immutability,
                                             product_name,
                                             source_path,
