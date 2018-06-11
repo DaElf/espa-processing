@@ -834,10 +834,10 @@ def update_template(args, template):
     order['options']['keep_directory'] = args.dev_mode
     order['options']['keep_intermediate_data'] = args.dev_intermediate
 
-    # Extras now that parsing and execution are separage ---------------------
-    order['work_dir'] = args.work_dir
-    order['dist_method'] = args.dist_method
+    # Fields needed by worker ------------------------------------------------
     order['dist_dir'] = args.dist_dir
+    order['dist_method'] = args.dist_method
+    order['work_dir'] = args.work_dir
 
     return order
 

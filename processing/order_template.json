@@ -50,5 +50,8 @@
     },
     "orderid": "ORDER_ID",
     "product_type": "PRODUCT_TYPE",
-    "scene": "SCENE_ID"
+    "scene": "SCENE_ID",
+    "dist_dir": null,
+    "dist_method": null,
+    "work_dir": null
 }

@@ -252,3 +252,17 @@ class EspaLogging(object):
             cls.check_logger_configured(logger_name)
 
         return logging.getLogger(logger_name)
+
+    @classmethod
+    def shutdown(cls):
+        """Shut down the logger
+
+        Closes all handlers and shuts down the logging system.
+
+        Raises:
+            EspaLoggerException
+        """
+
+        logging.shutdown()
+        cls.basic_logger_configured = False
+        cls.my_config = None

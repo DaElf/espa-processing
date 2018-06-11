@@ -20,6 +20,7 @@ import espa_processing.transfer as transfer
 APP_NAME = 'ESPA-Processing-Worker'
 VERSION = '2.23.0.1'
 
+
 def cli_log_filename(order):
     """Specifies the log filename
 
@@ -186,12 +187,10 @@ def process_order(order):
     finally:
         if logger:
             logger.info('*** ESPA Processing Complete ***')
+            EspaLogging.shutdown()
 
         if not order['bridge_mode']:
             archive_log_files(order, proc_cfg, proc_status)
-
-    # JDC XXX
-    #    Close log file so it starts over when the next job runs
 
 
 def get_message_from_sqs():
@@ -218,10 +217,8 @@ except KeyError as e:
 try:
     aws_region = os.environ['AWSRegion']
 except KeyError:
-    s3 = boto3.client('s3')
     sqs = boto3.resource('sqs')
 else:
-    s3 = boto3.client('s3', region_name=aws_region)
     sqs = boto3.resource('sqs', region_name=aws_region)
 
 
@@ -241,7 +238,7 @@ def main():
             # JDC Debug
             print("Got order " + order['orderid'])
         except Exception as e:
-            print(e)
+            print(str(e) + " message " + order)
             continue
 
         process_order(order)
