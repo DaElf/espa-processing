@@ -835,6 +835,7 @@ def update_template(args, template):
     order['options']['include_statistics'] = args.include_statistics
     order['options']['destination_username'] = args.destination_username
     order['options']['destination_pw'] = args.destination_pw
+    order['options']['dist_s3_bucket'] = args.dist_s3_bucket
 
     # Customization ----------------------------------------------------------
     order['options']['resample_method'] = args.resample_method
