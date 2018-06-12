@@ -2,6 +2,7 @@
 
 
 from cli import *
+import boto3
 
 PROC_CFG_FILENAME = 'processing.conf'
 
@@ -42,6 +43,8 @@ def main():
 
         queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
         response = queue.send_message(MessageBody=json.dumps(order))
+
+        print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
 
     except Exception as e:
 	print(e)
