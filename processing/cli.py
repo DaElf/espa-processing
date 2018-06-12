@@ -848,6 +848,11 @@ def update_template(args, template):
     order['options']['keep_directory'] = args.dev_mode
     order['options']['keep_intermediate_data'] = args.dev_intermediate
 
+    # Fields needed by worker ------------------------------------------------
+    order['dist_dir'] = args.dist_dir
+    order['dist_method'] = args.dist_method
+    order['work_dir'] = args.work_dir
+
     return order
 
 

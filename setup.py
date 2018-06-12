@@ -8,6 +8,6 @@ setup(
     packages=["espa_processing"],
     include_package_data=False,
     install_requires=["requests"],
-    scripts=["scripts/espa-process"],
+    scripts=["scripts/espa-process", "scripts/espa-prybar"],
     data_files=[('share/espa', [ 'processing/order_template.json']),],
 )
