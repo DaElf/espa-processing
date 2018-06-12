@@ -966,7 +966,9 @@ def main():
     proc_cfg = override_config(args, proc_cfg)
 
     # Configure the base logger for this request
-    EspaLogging.configure_base_logger(filename=cli_log_filename(args))
+    EspaLogging.configure_base_logger(filename=cli_log_filename(args),
+                                          level=logging.INFO)
+
     # Configure the processing logger for this request
     EspaLogging.configure(settings.PROCESSING_LOGGER,
                           order=args.order_id,
