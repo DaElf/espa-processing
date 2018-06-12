@@ -574,7 +574,7 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
     except Exception as excep:
         logger.error(excep)
         logger.error('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
-        raise e
+#        raise excep
 
     logger.info("S3 PUT completed: " + source_file + "to: " + key)
 
@@ -590,10 +590,10 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
                     ]
                 }
             )
-    except Exception as e:
-        logger.error(e)
+    except Exception as excep:
+        logger.error(excep)
         logger.error('Error getting object {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
-#        raise e
+#        raise excep
 
 def distribute_product_remote(immutability, product_name, source_path,
                               packaging_path, cache_path, parms):
