@@ -159,6 +159,7 @@ def process_order(order):
         logger.info('*** Begin ESPA Processing on host [{}] ***'
                     .format(socket.gethostname()))
         logger.info('Order ID [{}]'.format(order_id))
+        logger.info(str(order))
 
         proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
         proc_cfg = override_config(order, proc_cfg)
@@ -201,8 +202,7 @@ def get_message_from_sqs():
     """
 
     queue = sqs.get_queue_by_name(QueueName=sqsqueue_name)
-    message = queue.receive_messages(VisibilityTimeout=120,
-            WaitTimeSeconds=20,
+    message = queue.receive_messages(WaitTimeSeconds=20,
             MaxNumberOfMessages=1)
     return(message)
 
@@ -240,10 +240,10 @@ def main():
         except Exception as e:
             print(str(e) + " message " + order)
             continue
+        finally:
+            message.delete()
 
         process_order(order)
-
-        message.delete()
 
 
 if __name__ == '__main__':
