@@ -14,9 +14,9 @@ ESPA_LOCAL_CACHE_DIRECTORY = ''
 DEFAULT_SLEEP_SECONDS = 2
 
 # Maximum number of times to attempt packaging, delivery, and distribution
-MAX_PACKAGING_ATTEMPTS = 3
-MAX_DELIVERY_ATTEMPTS = 3
-MAX_DISTRIBUTION_ATTEMPTS = 5
+MAX_PACKAGING_ATTEMPTS = 0
+MAX_DELIVERY_ATTEMPTS = 0
+MAX_DISTRIBUTION_ATTEMPTS = 0
 
 # Maximum number of times to attempt setting the scene error
 MAX_SET_SCENE_ERROR_ATTEMPTS = 5
