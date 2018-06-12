@@ -28,8 +28,13 @@ def cli_log_filename(order):
         order <dict>: order parameters
     """
 
-    orderid = order['orderid']
-    product_id = order['product_id']
+    orderid = "undef"
+    product_id = "undef"
+
+    if order['orderid'] is not None:
+        orderid = order['orderid']
+    if order['product_id'] is not None:
+        product_id = order['product_id']
     return 'cli-{}-{}.log'.format(orderid, product_id)
 
 
@@ -152,10 +157,10 @@ def process_order(order):
     """
 
     current_directory = os.getcwd()
+    logger = cli_log_setup(order)
 
     try:
         order_id = order['orderid']
-        logger = cli_log_setup(order)
         logger.info('*** Begin ESPA Processing on host [{}] ***'
                     .format(socket.gethostname()))
         logger.info('Order ID [{}]'.format(order_id))
@@ -182,16 +187,15 @@ def process_order(order):
             os.chdir(current_directory)
 
     except Exception as e:
-       print(e)
-       logger.exception('*** Errors during processing ***')
+        print(e)
+        logger.exception('*** Errors during processing ***')
 
-    finally:
-        if logger:
-            logger.info('*** ESPA Processing Complete ***')
-            EspaLogging.shutdown()
+    if logger is not None:
+        logger.info('*** ESPA Processing Complete ***')
+        EspaLogging.shutdown()
 
-        if not order['bridge_mode']:
-            archive_log_files(order, proc_cfg, proc_status)
+    if not order['bridge_mode']:
+        archive_log_files(order, proc_cfg, proc_status)
 
 
 def get_message_from_sqs():
