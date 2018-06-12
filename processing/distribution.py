@@ -557,7 +557,12 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
 
     s3 = boto3.resource('s3')
 
-    bucket_name = parms['options']['dist_s3_bucket']
+    if  parms['options']['dist_s3_bucket'] is not None:
+        bucket_name = parms['options']['dist_s3_bucket']
+    else:
+        logger.error("Error dist_s3_bucket not defined")
+        return
+
     s3_bucket = s3.Bucket(bucket_name)
 
     source_file =  product_full_path
