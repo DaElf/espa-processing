@@ -6,6 +6,7 @@
         "central_meridian": null,
         "datum": "wgs84",
         "debug": false,
+        "dist_s3_bucket": null,
         "false_easting": null,
         "false_northing": null,
         "image_extents": false,
