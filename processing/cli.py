@@ -954,16 +954,19 @@ def archive_log_files(args, proc_cfg, proc_status):
         os.unlink(proc_log)
 
 
-def archive_log_s3(args, order, proc_status):
+def archive_log_s3(order, args=None):
     """Archive the log files for the current execution to S3
 
     Args:
+        order <Dictionary>: Configuration
         args <args>: Command line arguments
-        proc_cfg <ConfigParser>: Configuration
-        proc_status <bool>: True = Success, False = Error
     """
 
-    base_log = cli_log_filename(args)
+    if args is not None:
+        base_log = cli_log_filename(args)
+    else:
+        base_log = None
+
     proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
 
     if order['options']['dist_s3_bucket'] is not None:
@@ -976,9 +979,11 @@ def archive_log_s3(args, order, proc_status):
     s3_bucket = s3.Bucket(bucket_name)
 
     for key in [base_log, proc_log]:
-        source_file = key
-        print('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
+        if key is None:
+            continue
         try:
+            source_file = key
+            print('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
             s3_bucket.upload_file(source_file, key)
             print("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + key)
         except Exception as excep:
@@ -1065,14 +1070,14 @@ def main():
 
     finally:
         logger.info('*** ESPA Processing Completed ***')
-#        EspaLogging.shutdown()
 
         if not args.bridge_mode:
-            archive_log_files(args, proc_cfg, proc_status)
+            archive_log_files(proc_cfg, proc_status, args)
 
-        if args.dist_method == 's3':
-            archive_log_s3(args, order, proc_status)
+        if order['dist_method'] is not None and order['dist_method'] == 's3':
+            archive_log_s3(order=order, args=args)
 
+        EspaLogging.shutdown()
 
 if __name__ == '__main__':
     main()

@@ -192,11 +192,15 @@ def process_order(order):
 
     if logger is not None:
         logger.info('*** ESPA Processing Complete ***')
-        EspaLogging.shutdown()
 
     if not order['bridge_mode']:
         archive_log_files(order, proc_cfg, proc_status)
 
+    if order['dist_method'] is not None and order['dist_method'] == 's3':
+        archive_log_s3(order=order)
+
+    if logger is not None:
+        EspaLogging.shutdown()
 
 def get_message_from_sqs():
     """Read a message from the SQS queue
@@ -233,6 +237,7 @@ def main():
 
     while True:
         message_list = get_message_from_sqs()
+        print("Starting to listen", len(message_list))
         if len(message_list) == 0:
             continue
         message = message_list[0]
@@ -247,6 +252,7 @@ def main():
         finally:
             message.delete()
 
+        print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
         process_order(order)
 
 
