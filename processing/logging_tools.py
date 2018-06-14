@@ -108,7 +108,8 @@ class EspaLogging(object):
             cls.my_config['formatters'] = dict()
 
             # Setup a basic logger so that we can use it for errors
-            cls.configure_base_logger()
+            if not cls.basic_logger_configured:
+                cls.configure_base_logger()
 
         # Configure the logger
         if logger_name not in cls.my_config['loggers']:
