@@ -555,14 +555,13 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
 
     logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
 
-    s3 = boto3.resource('s3')
-
     if  parms['options']['dist_s3_bucket'] is not None:
         bucket_name = parms['options']['dist_s3_bucket']
     else:
         logger.error("Error dist_s3_bucket not defined")
         return
 
+    s3 = boto3.resource('s3')
     s3_bucket = s3.Bucket(bucket_name)
 
     source_file =  product_full_path
@@ -597,7 +596,7 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
 #        raise excep
 
 def distribute_product_remote(immutability, product_name, source_path,
-                              packaging_path, cache_path, parms):
+                              packaging_path, parms):
 
     logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
 
@@ -876,7 +875,6 @@ def distribute_product(immutability, product_name, source_path,
                                       product_name,
                                       source_path,
                                       packaging_path ,
-                                      cache_path,
                                       parms)
 
     elif distribution_method == DISTRIBUTION_METHOD_S3:
@@ -884,19 +882,6 @@ def distribute_product(immutability, product_name, source_path,
                                             product_name,
                                             source_path,
                                             packaging_path,
-                                            cache_path,
-                                            parms)
-
-
-    elif distribution_method == DISTRIBUTION_METHOD_S3:
-        logger.info('product_name ' + product_name + ' source_path ' + source_path + ' packaging_path ' + packaging_path + ' cache_path ' + cache_path)
-        logger.info(immutability, parms)
-
-        (product_file, cksum_file) = distribute_product_remote(immutability,
-                                            product_name,
-                                            source_path,
-                                            packaging_path,
-                                            cache_path,
                                             parms)
 
     else:
