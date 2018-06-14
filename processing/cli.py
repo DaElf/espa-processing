@@ -962,6 +962,8 @@ def archive_log_s3(order, args=None):
         args <args>: Command line arguments
     """
 
+    logger = EspaLogging.get_logger('base')
+
     if args is not None:
         base_log = cli_log_filename(args)
     else:
@@ -972,7 +974,7 @@ def archive_log_s3(order, args=None):
     if order['options']['dist_s3_bucket'] is not None:
         bucket_name = order['options']['dist_s3_bucket']
     else:
-        print("Error dist_s3_bucket not defined")
+        logger.error("Error dist_s3_bucket not defined")
         return
 
     s3 = boto3.resource('s3')
@@ -983,12 +985,12 @@ def archive_log_s3(order, args=None):
             continue
         try:
             source_file = key
-            print('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
+            logger.info('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
             s3_bucket.upload_file(source_file, key)
-            print("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + key)
+            logger.info("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + key)
         except Exception as excep:
-            print excep
-            print('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
+            logger.info(excep)
+            logger.info('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
 
 
 PROC_CFG_FILENAME = 'processing.conf'
