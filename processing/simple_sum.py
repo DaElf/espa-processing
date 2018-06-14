@@ -36,9 +36,6 @@ def distribute_sum_directory(path='.', product_name='sum'):
         raise
 
     try:
-        #tempdir = tempfile.mkdtemp()
-        #check_output(['gpg','--homedir',tempdir,'--import','USGS_private.asc'])
-        #check_output(['gpg','--homedir',tempdir,'--detach-sig','--armor','sum.sha256'])
         check_output(['gpg', '--yes', '--sign', '--armor', sum_file])
     except IOError as e:
         logger.error("I/O error on '%s': %s" % (e.filename, e.strerror))
