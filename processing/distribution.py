@@ -567,29 +567,30 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
 
     source_file =  product_full_path
     key = product_name + '.tar.gz'
-    logger.info('PUTTING: ' + source_file + "\nTo: " + bucket_name + '/' + key)
-    #print os.path.isfile(source_file)
+    logger.info('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
     try:
         s3_bucket.upload_file(source_file, key)
+        logger.info("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + key)
     except Exception as excep:
         logger.error(excep)
         logger.error('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
 #        raise excep
 
-    logger.info("S3 PUT completed: " + source_file + "to: " + key)
-
     try:
-        bucket_tagging = s3.BucketTagging(bucket_name)
-        response = bucket_tagging.put(
+        client = boto3.client('s3')
+        client.put_object_tagging(
+            Bucket=bucket_name,
+            Key=key,
             Tagging={
                 'TagSet': [
                     {
                         'Key': 'product',
                         'Value': 'level2'
                     },
-                    ]
-                }
+                ]
+            }
             )
+        logger.info("S3 TagSet completed: " + key)
     except Exception as excep:
         logger.error(excep)
         logger.error('Error getting object {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
@@ -661,9 +662,6 @@ def distribute_product_remote(immutability, product_name, source_path,
             # Always log where we placed the files
             product_file = os.path.basename(product_full_path)
             cksum_file = os.path.basename(cksum_full_path)
-            logger.info("Delivered product to %s bucket %s as %s and "
-                            "cksum %s" % ("s3", cache_path,
-                                product_file, cksum_file))
         except Exception:
             if attempt < max_number_of_attempts:
                 sleep(sleep_seconds)  # sleep before trying again
