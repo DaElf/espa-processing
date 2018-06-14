@@ -9,12 +9,13 @@ import json
 import boto3
 
 
-import espa_processing.settings as settings
-import espa_processing.utilities as util
-import espa_processing.config_utils as config
-from espa_processing.logging_tools import EspaLogging
-import espa_processing.processor as processor
-import espa_processing.transfer as transfer
+import settings as settings
+import utilities as util
+import config_utils as config
+from logging_tools import EspaLogging
+import processor as processor
+import transfer as transfer
+from cli import archive_log_s3
 
 
 APP_NAME = 'ESPA-Processing-Worker'
