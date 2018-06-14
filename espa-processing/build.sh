@@ -2,6 +2,7 @@
 set -x
 set -e
 
+rm -f SRPMS/*.src.rpm
 if [ ! -f SOURCES/espa-processing.tar.gz ]; then
 (cd ../../espa-processing; \
 	 git  archive --format=tar.gz \
