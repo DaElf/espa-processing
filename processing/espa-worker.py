@@ -7,6 +7,7 @@ import shutil
 import socket
 import json
 import boto3
+import logging
 
 
 import settings as settings
@@ -42,7 +43,9 @@ def cli_log_filename(order):
 def cli_log_setup(order):
 
     # Configure the base logger for this request
-    EspaLogging.configure_base_logger(filename=cli_log_filename(order))
+    EspaLogging.configure_base_logger(filename=cli_log_filename(order),
+                                          level=logging.INFO)
+
     # Configure the processing logger for this request
     EspaLogging.configure(settings.PROCESSING_LOGGER,
                           order=order['orderid'],
@@ -191,9 +194,6 @@ def process_order(order):
         print(e)
         logger.exception('*** Errors during processing ***')
 
-    if logger is not None:
-        logger.info('*** ESPA Processing Complete ***')
-
     if not order['bridge_mode']:
         archive_log_files(order, proc_cfg, proc_status)
 
@@ -201,6 +201,7 @@ def process_order(order):
         archive_log_s3(order=order)
 
     if logger is not None:
+        logger.info('*** ESPA Processing Complete ***')
         EspaLogging.shutdown()
 
 def get_message_from_sqs():
