@@ -138,7 +138,8 @@ class ProductProcessor(object):
         parms['options']['destination_pw'] = 'XXXXXXX'
 
         self._logger.info('MAPPER OPTION LINE {}'
-                          .format(json.dumps(parms, sort_keys=True)))
+                              .format(json.dumps(parms, sort_keys=True,
+                                                     indent=3, separators=(',', ': '))))
 
         del parms
 
@@ -192,6 +193,7 @@ class ProductProcessor(object):
 
         # Just incase remove it, and we don't care about errors if it
         # doesn't exist (probably only needed for developer runs)
+        self._logger.info('Removing product_dir [{}]'.format(self._product_dir))
         shutil.rmtree(self._product_dir, ignore_errors=True)
 
         # Create each of the sub-directories
