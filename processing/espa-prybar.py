@@ -3,6 +3,7 @@
 
 from cli import *
 import boto3
+import random
 
 PROC_CFG_FILENAME = 'processing.conf'
 
@@ -42,7 +43,7 @@ def main():
             sqs = boto3.resource('sqs', region_name=aws_region)
 
         queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
-        response = queue.send_message(MessageBody=json.dumps(order))
+        response = queue.send_message(MessageBody=json.dumps(order), MessageGroupId="ESPA", MessageDeduplicationId=str(random.getrandbits(128)))
 
         print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
 
