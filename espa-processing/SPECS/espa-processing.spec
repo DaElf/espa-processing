@@ -1,6 +1,6 @@
 Name:           espa-processing
-Version:        1.0
-Release:        2%{?dist}
+Version:        2.27.1
+Release:        1%{?dist}
 Summary:	ESPA processing
 
 Group:		ESPA
@@ -32,7 +32,7 @@ Requires:       python-gdal
 %summary
 
 %prep
-%setup -q
+%setup -q -n espa-processing
 
 
 %build
