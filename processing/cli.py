@@ -13,8 +13,10 @@ import settings
 import utilities as util
 import config_utils as config
 from logging_tools import EspaLogging
+import logging
 import processor
 import transfer
+import boto3
 
 
 APP_NAME = 'ESPA-Processing'
@@ -952,8 +954,39 @@ def archive_log_files(args, proc_cfg, proc_status):
         os.unlink(proc_log)
 
 
-PROC_CFG_FILENAME = 'processing.conf'
+def archive_log_s3(args, order, proc_status):
+    """Archive the log files for the current execution to S3
 
+    Args:
+        args <args>: Command line arguments
+        proc_cfg <ConfigParser>: Configuration
+        proc_status <bool>: True = Success, False = Error
+    """
+
+    base_log = cli_log_filename(args)
+    proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
+
+    if order['options']['dist_s3_bucket'] is not None:
+        bucket_name = order['options']['dist_s3_bucket']
+    else:
+        print("Error dist_s3_bucket not defined")
+        return
+
+    s3 = boto3.resource('s3')
+    s3_bucket = s3.Bucket(bucket_name)
+
+    for key in [base_log, proc_log]:
+        source_file = key
+        print('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
+        try:
+            s3_bucket.upload_file(source_file, key)
+            print("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + key)
+        except Exception as excep:
+            print excep
+            print('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
+
+
+PROC_CFG_FILENAME = 'processing.conf'
 
 def main():
     """Configures an order from the command line input and calls the
@@ -1032,9 +1065,13 @@ def main():
 
     finally:
         logger.info('*** ESPA Processing Completed ***')
+#        EspaLogging.shutdown()
 
         if not args.bridge_mode:
             archive_log_files(args, proc_cfg, proc_status)
+
+        if args.dist_method == 's3':
+            archive_log_s3(args, order, proc_status)
 
 
 if __name__ == '__main__':
