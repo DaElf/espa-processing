@@ -28,7 +28,8 @@ for repo in $1; do
      rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/$repo.spec \
 	 && sudo mock $old_chroot --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --define "dist $my_dist" \
 		 --resultdir $(pwd)/mock_result SRPMS/*${my_dist}*.src.rpm \
-	 && find ./ -name \*.x86_64.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \; \
+	 && rm -f $root/CentOS/7/local/x86_64/RPMS/${repo}* \
+	 && find ./ -name \*.x86_64.rpm -exec rsync -aP {} $root/CentOS/7/local/x86_64/RPMS/ \; \
 	 && createrepo $root/CentOS/7/local/x86_64 \
      )
 done
@@ -63,8 +64,9 @@ REPOS="\
      espa-surface-temperature \
      espa-elevation \
      espa-reprojection \
-     espa-plotting \
-     espa-processing"
+     espa-plotting"
+
+#espa-processing
 
 process_repos "$REPOS"
 
