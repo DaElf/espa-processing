@@ -2,13 +2,16 @@
 set -x
 set -e
 
-rm ./SRPMS/*.src.rpm
+REPOS="espa-surface-temperature"
 if [ ! -f SOURCES/espa-surface-temperature.tar.gz ]; then
-(cd ../../espa-surface-temperature; \
-	 git  archive --format=tar.gz \
-	-o ../espa-rpmbuild/espa-surface-temperature/SOURCES/espa-surface-temperature.tar.gz  \
-	--prefix=espa-surface-temperature-1.1.1/ master)
-fi
-rpmbuild --define "_topdir $(pwd)" -bs SPECS/*.spec
-sudo mock --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
+for repo in $REPOS; do
+    (cd ../$repo; \
+     git  archive --format=tar.gz \
+	  -o ../espa-rpmbuild/$repo/SOURCES/$repo.tar.gz  \
+	  --prefix=$repo/ master)
+done
+my_dist=$(cd ../../espa-processing; git describe | awk -F'-g' '{print "g"$2}')
+rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/*.spec
+sudo mock --old-chroot  --configdir=$(pwd)/../mock_config --define "dist $my_dist" \
+     -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
 

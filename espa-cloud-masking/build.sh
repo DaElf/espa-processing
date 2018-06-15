@@ -2,12 +2,16 @@
 set -x
 set -e
 
+REPOS="espa-cloud-masking"
 if [ ! -f SOURCES/espa-cloud-masking.tar.gz ]; then
-(cd ../../espa-cloud-masking; \
-	 git  archive --format=tar.gz \
-	-o ../espa-rpmbuild/espa-cloud-masking/SOURCES/espa-cloud-masking.tar.gz  \
-	--prefix=espa-cloud-masking-1.0/ master)
-fi
-rpmbuild --define "_topdir $(pwd)" -bs SPECS/*.spec
-sudo mock --old-chroot  --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
+for repo in $REPOS; do
+    (cd ../$repo; \
+     git  archive --format=tar.gz \
+	  -o ../espa-rpmbuild/$repo/SOURCES/$repo.tar.gz  \
+	  --prefix=$repo/ master)
+done
+my_dist=$(cd ../../espa-processing; git describe | awk -F'-g' '{print "g"$2}')
+rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/*.spec
+sudo mock --old-chroot  --configdir=$(pwd)/../mock_config --define "dist $my_dist" \
+     -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
 

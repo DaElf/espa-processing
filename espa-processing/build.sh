@@ -2,13 +2,16 @@
 set -x
 set -e
 
-rm -f SRPMS/*.src.rpm
+REPOS="espa-processing"
 if [ ! -f SOURCES/espa-processing.tar.gz ]; then
-(cd ../../espa-processing; \
-	 git  archive --format=tar.gz \
-	-o ../espa-rpmbuild/espa-processing/SOURCES/espa-processing.tar.gz  \
-	--prefix=espa-processing/ cloud-master)
-fi
-rpmbuild --define "_topdir $(pwd)" -bs SPECS/espa-processing.spec
-sudo mock --old-chroot  --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
+for repo in $REPOS; do
+    (cd ../$repo; \
+     git  archive --format=tar.gz \
+	  -o ../espa-rpmbuild/$repo/SOURCES/$repo.tar.gz  \
+	  --prefix=$repo/ master)
+done
+my_dist=$(cd ../../espa-processing; git describe | awk -F'-g' '{print "g"$2}')
+rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/*.spec
+sudo mock --old-chroot  --configdir=$(pwd)/../mock_config --define "dist $my_dist" \
+     -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
 
