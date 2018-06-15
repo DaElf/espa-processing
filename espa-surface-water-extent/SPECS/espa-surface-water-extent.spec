@@ -18,7 +18,7 @@ ESPA surface water extent
 
 
 %prep
-%setup -q
+%setup -q -n espa-surface-water-extent
 
 
 %build

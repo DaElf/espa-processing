@@ -26,7 +26,7 @@ Requires: scipy
 ESPA surface temperature
 
 %prep
-%setup -q
+%setup -q -n espa-surface-temperature
 %patch0 -p1 -b .InvGeoTranmsform
 %patch1 -p1 -b .common_cfg
 

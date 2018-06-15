@@ -34,7 +34,7 @@ This application also provided for generating the land water mask.
 These applications are implementated in C.
 
 %prep
-%setup -q
+%setup -q -n espa-product-formatter
 %patch0 -p1 -b .build
 
 %build

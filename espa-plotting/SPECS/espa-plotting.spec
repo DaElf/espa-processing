@@ -13,7 +13,7 @@ Source0:        espa-plotting.tar.gz
 ESPA plotting
 
 %prep
-%setup -q
+%setup -q -n espa-plotting
 
 %build
 export PREFIX=/usr

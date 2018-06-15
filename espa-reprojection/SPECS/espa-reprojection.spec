@@ -12,7 +12,7 @@ Source0:        espa-reprojection.tar.gz
 ESPA repojection
 
 %prep
-%setup -q
+%setup -q -n espa-reprojection
 
 
 %build

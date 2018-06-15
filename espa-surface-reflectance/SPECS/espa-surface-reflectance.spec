@@ -21,7 +21,7 @@ BuildRequires: libaec-devel
 ESPA surface reflectance
 
 %prep
-%setup -q
+%setup -q -n espa-surface-reflectance
 
 
 %build

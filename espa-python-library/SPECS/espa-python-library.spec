@@ -28,7 +28,7 @@ ESPA python library
 
 
 %prep
-%setup -q -n espa-python-library-%{version}
+%setup -q -n espa-python-library
 
 
 %build

@@ -18,7 +18,7 @@ Requires: libxml2
 ESPA cloud masking
 
 %prep
-%setup -q
+%setup -q -n espa-cloud-masking
 
 %build
 export PREFIX=%{_prefix}

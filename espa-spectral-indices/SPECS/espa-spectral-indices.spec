@@ -16,7 +16,7 @@ BuildRequires: libxml2-devel
 ESPA spectral indices
 
 %prep
-%setup -q
+%setup -q -n espa-spectral-indices
 
 
 %build

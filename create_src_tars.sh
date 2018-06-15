@@ -13,20 +13,14 @@ REPOS="\
      espa-surface-temperature \
      espa-elevation \
      espa-reprojection \
-     espa-plotting \
-     espa-processing"
+     espa-plotting"
 
-for repo in $REPOS_NOT; do
-#    mkdir -p $repo/SOURCES $repo/SPECS
-    #    (cd $repo/SPECS; rpmdev-newspec $repo)
-    (cd $repo; \
-     git clone https://github.com/USGS-EROS/$repo;
-     cd $repo;
-      git archive --format=tar.gz -o ../SOURCES/$repo.tar.gz --prefix=$repo-1.0/ master)
+#     espa-processing
 
-done
-
-for repo in $REPOS_NOT; do
-    git submodule add https://github.com/USGS-EROS/$repo
+for repo in $REPOS; do
+    (cd ../$repo; \
+     git  archive --format=tar.gz \
+	  -o ../espa-rpmbuild/$repo/SOURCES/$repo.tar.gz  \
+	  --prefix=$repo/ master)
 done
 

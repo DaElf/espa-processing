@@ -23,7 +23,7 @@ Group: Development/Libraries
 ESPA l2qa tools
 
 %prep
-%setup -q
+%setup -q -n espa-l2qa-tools
 
 %build
 export PREFIX=/usr

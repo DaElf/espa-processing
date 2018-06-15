@@ -19,7 +19,7 @@ Requires:      python-lxml
 ESPA elevation
 
 %prep
-%setup -q
+%setup -q -n espa-elevation
 
 %build
 export PREFIX=/usr
