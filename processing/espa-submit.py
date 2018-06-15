@@ -10,10 +10,10 @@ import boto3
 from argparse import ArgumentParser
 
 
-import espa_processing.settings
-import espa_processing.utilities as util
-import espa_processing.config_utils as config
-import espa_processing.cli as cli
+import settings
+import utilities as util
+import config_utils as config
+import cli as cli
 
 
 def update_template(args, template):

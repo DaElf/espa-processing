@@ -4,10 +4,10 @@ from setuptools import setup, find_packages
 setup(
     name='espa_processing',
     package_dir = {'espa_processing': 'processing'},
-    version="1.0",
-    packages=["espa_processing"],
+    version='1.0',
+    packages=['espa_processing'],
     include_package_data=False,
-    install_requires=["requests"],
-    scripts=["scripts/espa-process", "scripts/espa-prybar"],
+    install_requires=['requests'],
+    scripts=['scripts/espa-process', 'scripts/espa-worker', 'scripts/espa-submit'],
     data_files=[('share/espa', [ 'processing/order_template.json']),],
 )
