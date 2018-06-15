@@ -16,7 +16,10 @@ import config_utils as config
 from logging_tools import EspaLogging
 import processor as processor
 import transfer as transfer
-from cli import archive_log_s3
+from cli import archive_log_s3 
+from cli import archive_log_files
+from cli import copy_log_file
+from cli import export_environment_variables
 
 
 APP_NAME = 'ESPA-Processing-Worker'
@@ -57,17 +60,15 @@ def cli_log_setup(order):
     return logger
 
 
-def export_environment_variables(cfg):
-    """Export the configuration to environment variables
-
-    Supporting applications require them to be in the environmant
+def clear_environment_variables(cfg):
+    """Clear the configuration environment variables
 
     Args:
         cfg <ConfigParser>: Configuration
     """
 
     for key, value in cfg.items('processing'):
-        os.environ[key.upper()] = value
+        del os.environ['key.upper()']
 
 
 def override_config(order, proc_cfg):
@@ -96,61 +97,30 @@ def override_config(order, proc_cfg):
     return cfg
 
 
-def copy_log_file(log_name, destination_path, proc_status):
-    """Copy the log file
+def validate_order(order):
+    """Validate the order
+
+    Check that required elements are in the order
 
     Args:
-        log_name <str>: Relative path to the log file
-        destination_path <str>: Location to copy the log file
-        proc_status <bool>: True = Success, False = Error
-
-    Note: proc_status is passed in to allow for the modification of the
-          archive filename for the log.  It is meant to mean that processing
-          of the scene was successful(True) or not(False).  Allowing users to
-          more easily find scenes with failures when looking in the archive
-          log directory.
+        order <dict>: the order to be validated
     """
 
-    abs_log_path = os.path.abspath(log_name)
-    if proc_status:
-        base_log_name = 'success-{}'.format(os.path.basename(log_name))
-    else:
-        base_log_name = 'error-{}'.format(os.path.basename(log_name))
+    # Check for required arguments
+    try:
+        order_id = order['orderid']
+        scene = order['scene']
+        product_id = order['product_id']
+        product_type = ['product_type']
+        download_url= ['download_url']
+        espa_api= ['espa_api']
+        bridge_mode= ['bridge_mode']
+        options = ['options']
+    except KeyError as e:
+        print("Error in order: [{}] not present".format(str(e)))
+        return False
 
-    # Determine full destination
-    destination_file = os.path.join(destination_path, base_log_name)
-
-    # Copy it
-    shutil.copyfile(abs_log_path, destination_file)
-
-
-def archive_log_files(order, proc_cfg, proc_status):
-    """Archive the log files for the current execution
-
-    Args:
-        order <dict>: Command line arguments
-        proc_cfg <ConfigParser>: Configuration
-        proc_status <bool>: True = Success, False = Error
-    """
-
-    base_log = cli_log_filename(order)
-    proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
-    dist_path = proc_cfg.get('processing', 'espa_log_archive')
-    destination_path = os.path.join(dist_path, order['orderid'])
-
-    # Create the archive path
-    util.create_directory(destination_path)
-
-    # Copy them
-    copy_log_file(base_log, destination_path, proc_status)
-    copy_log_file(proc_log, destination_path, proc_status)
-
-    # Remove the source versions
-    if os.path.exists(base_log):
-        os.unlink(base_log)
-
-    if os.path.exists(proc_log):
-        os.unlink(proc_log)
+    return True
 
 
 def process_order(order):
@@ -163,12 +133,11 @@ def process_order(order):
     current_directory = os.getcwd()
     logger = cli_log_setup(order)
 
+    order_id = order['orderid']
     try:
-        order_id = order['orderid']
         logger.info('*** Begin ESPA Processing on host [{}] ***'
                     .format(socket.gethostname()))
         logger.info('Order ID [{}]'.format(order_id))
-#        logger.info(str(order))
 
         proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
         proc_cfg = override_config(order, proc_cfg)
@@ -187,8 +156,8 @@ def process_order(order):
             pp = processor.get_instance(proc_cfg, order)
             (destination_product_file, destination_cksum_file) = pp.process()
         finally:
-            # Change back to the previous directory
             os.chdir(current_directory)
+            clear_environment_variables(proc_cfg)
 
     except Exception as e:
         print(e)
@@ -253,6 +222,9 @@ def main():
             continue
         finally:
             message.delete()
+
+        if not validate_order(order):
+            continue
 
         print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
         process_order(order)
