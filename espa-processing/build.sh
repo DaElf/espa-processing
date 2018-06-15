@@ -3,7 +3,7 @@ set -x
 set -e
 
 rm -rf mock_result
-rm SRPMS/*.src.rpm
+rm -f SRPMS/*.src.rpm
 REPOS="espa-processing"
 if [ ! -f SOURCES/espa-processing.tar.gz ]; then
     for repo in $REPOS; do
@@ -14,8 +14,15 @@ if [ ! -f SOURCES/espa-processing.tar.gz ]; then
     done
 fi
 
-my_dist=$(cd ../../espa-processing; git describe | awk -F'-g' '{print "g"$2}')
-rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/*.spec
-sudo mock --old-chroot  --configdir=$(pwd)/../mock_config --define "dist $my_dist" \
-     -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm
+for repo in $REPOS; do
+    my_dist=$(cd ../../$repo; git describe --long --tags | awk -F'-g' '{print "g"$2}')
+    rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/$repo.spec
+    sudo mock --old-chroot  --configdir=$(pwd)/../mock_config --define "dist $my_dist" \
+	 -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*${my_dist}*.src.rpm
 
+    root=/efs
+    rm -f $root/CentOS/7/local/x86_64/RPMS/${repo}*
+    mkdir -p $root/CentOS/7/local/x86_64/
+    find ./ -name \*.x86_64.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \;
+    createrepo $root/CentOS/7/local/x86_64/
+done
