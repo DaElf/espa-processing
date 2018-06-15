@@ -198,7 +198,7 @@ def process_order(order):
         archive_log_files(order, proc_cfg, proc_status)
 
     if order['dist_method'] is not None and order['dist_method'] == 's3':
-        archive_log_s3(order=order)
+        archive_log_s3(order=order, base_log=cli_log_filename(order))
 
     if logger is not None:
         logger.info('*** ESPA Processing Complete ***')

@@ -954,7 +954,7 @@ def archive_log_files(args, proc_cfg, proc_status):
         os.unlink(proc_log)
 
 
-def archive_log_s3(order, args=None):
+def archive_log_s3(order, base_log=None):
     """Archive the log files for the current execution to S3
 
     Args:
@@ -963,12 +963,6 @@ def archive_log_s3(order, args=None):
     """
 
     logger = EspaLogging.get_logger('base')
-
-    if args is not None:
-        base_log = cli_log_filename(args)
-    else:
-        base_log = None
-
     proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
 
     if order['options']['dist_s3_bucket'] is not None:
@@ -983,6 +977,7 @@ def archive_log_s3(order, args=None):
     for key in [base_log, proc_log]:
         if key is None:
             continue
+        print("stashing log file [{}]", key)
         try:
             source_file = key
             logger.info('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
@@ -1077,7 +1072,7 @@ def main():
             archive_log_files(proc_cfg, proc_status, args)
 
         if order['dist_method'] is not None and order['dist_method'] == 's3':
-            archive_log_s3(order=order, args=args)
+            archive_log_s3(order=order, base_log=cli_log_filename(args))
 
         EspaLogging.shutdown()
 
