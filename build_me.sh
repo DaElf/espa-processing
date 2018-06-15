@@ -7,13 +7,25 @@ python -m SimpleHTTPServer 9000 &
 pid=$! ;  echo "simple server pid $pid"
 popd
 
+sigint()
+{
+   echo "signal INT received, script ending"
+   kill $pid
+   exit 0
+}
+
+trap 'sigint'  INT
+
 process_repos () {
 for repo in $1; do
+    my_dist=$(cd ../$repo; git describe --long --tags | awk -F'-g' '{print "g"$2}')
     (cd $repo; \
-     rpmbuild --define "_topdir $(pwd)" -bs SPECS/*.spec \
-     && sudo mock $old_chroot --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm \
-     && find ./ -name \*.x86_64.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \; \
-     && createrepo $root/CentOS/7/local/x86_64 \
+     rm -f SRPMS/*.src.rpm; rm -rf mock_result;  \
+     rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/*.spec \
+	 && sudo mock $old_chroot --configdir=$(pwd)/../mock_config -r my-epel-7-x86_64 --define "dist $my_dist" \
+		 --resultdir $(pwd)/mock_result SRPMS/*.src.rpm \
+	 && find ./ -name \*.x86_64.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \; \
+	 && createrepo $root/CentOS/7/local/x86_64 \
      )
 done
 }
@@ -33,12 +45,12 @@ old_chroot=""
 root=/efs
 
 pushd ../../ips-all/ips_rpmbuild/
-process_repos "$REPOS"
+#process_repos "$REPOS"
 popd
 
 REPOS="\
-     espa-cloud-masking \
      espa-product-formatter \
+     espa-cloud-masking \
      espa-python-library \
      espa-l2qa-tools \
      espa-spectral-indices \
@@ -51,5 +63,4 @@ REPOS="\
      espa-processing"
 
 process_repos "$REPOS"
-kill $pid
 exit
