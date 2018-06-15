@@ -168,7 +168,7 @@ def process_order(order):
         logger.info('*** Begin ESPA Processing on host [{}] ***'
                     .format(socket.gethostname()))
         logger.info('Order ID [{}]'.format(order_id))
-        logger.info(str(order))
+#        logger.info(str(order))
 
         proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
         proc_cfg = override_config(order, proc_cfg)
