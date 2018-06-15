@@ -7,6 +7,7 @@ import shutil
 import socket
 import json
 import boto3
+import random
 from argparse import ArgumentParser
 
 
@@ -27,8 +28,8 @@ def update_template(args, template):
     return order
 
 def main():
-    """Configures an order from the command line input and calls the
-       processing code using the order
+    """Configures an order from the command line input and submits the
+       order to the SQS queue specified in SQSBatchQueue
     """
 
     args = cli.parse_command_line()
@@ -62,7 +63,9 @@ def main():
             sqs = boto3.resource('sqs', region_name=aws_region)
 
         queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
-        response = queue.send_message(MessageBody=json.dumps(order))
+        response = queue.send_message(MessageBody=json.dumps(order),
+                MessageGroupId = 'ESPA',
+                MessageDeduplicationId = str(random.getrandbits(128)))
 
     except Exception as e:
         print(e)
