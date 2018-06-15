@@ -43,8 +43,6 @@ def main():
             raise CliError('Must specify --pixel-size-units if specifying'
                            ' --pixel-size')
 
-        cli.export_environment_variables(proc_cfg)
-
         template = cli.load_template(filename=cli.TEMPLATE_FILENAME)
 
         order = update_template(args=args, template=template)
