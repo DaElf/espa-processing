@@ -8,7 +8,7 @@ import socket
 import json
 import boto3
 import logging
-
+from ConfigParser import ConfigParser
 
 import settings as settings
 import utilities as util
@@ -16,7 +16,7 @@ import config_utils as config
 from logging_tools import EspaLogging
 import processor as processor
 import transfer as transfer
-from cli import archive_log_s3 
+from cli import archive_log_s3
 from cli import archive_log_files
 from cli import copy_log_file
 from cli import export_environment_variables
@@ -60,41 +60,34 @@ def cli_log_setup(order):
     return logger
 
 
+def create_parser(proc_cfg):
+    """Create a configuration parser
+
+    Create a ConfigParser() from the list of options passed
+    in with the JSON order.
+
+    Args:
+        proc_cfg <list>: the list of configuration options
+    """
+
+    parser = ConfigParser()
+    parser.add_section('processing')
+
+    for setting in proc_cfg:
+        parser.set('processing', setting[0], setting[1])
+
+    return parser
+
+
 def clear_environment_variables(cfg):
     """Clear the configuration environment variables
 
     Args:
-        cfg <ConfigParser>: Configuration
+        cfg <ConfigParser>: Configuration parser
     """
 
     for key, value in cfg.items('processing'):
-        del os.environ['key.upper()']
-
-
-def override_config(order, proc_cfg):
-    """Override configuration with command line values
-
-    Args:
-        order <dict>: Order parameters
-        proc_cfg <ConfigParser>: Configuration
-
-    Returns:
-        <ConfigParser>: Configuration updated (not a copy)
-    """
-
-    # Just pretending to be immutable, can't deepcopy ConfigParser
-    cfg = proc_cfg
-
-    if order['work_dir'] is not None:
-        cfg.set('processing', 'espa_work_dir', order['work_dir'])
-
-    if order['dist_method'] is not None:
-        cfg.set('processing', 'espa_distribution_method', order['dist_method'])
-
-    if order['dist_dir'] is not None:
-        cfg.set('processing', 'espa_distribution_dir', order['dist_dir'])
-
-    return cfg
+        del os.environ[key.upper()]
 
 
 def validate_order(order):
@@ -111,11 +104,12 @@ def validate_order(order):
         order_id = order['orderid']
         scene = order['scene']
         product_id = order['product_id']
-        product_type = ['product_type']
-        download_url= ['download_url']
-        espa_api= ['espa_api']
-        bridge_mode= ['bridge_mode']
-        options = ['options']
+        product_type = order['product_type']
+        download_url = order['download_url']
+        espa_api = order['espa_api']
+        bridge_mode = order['bridge_mode']
+        options = order['options']
+        proc_cfg = order['proc_cfg']
     except KeyError as e:
         print("Error in order: [{}] not present".format(str(e)))
         return False
@@ -139,8 +133,7 @@ def process_order(order):
                     .format(socket.gethostname()))
         logger.info('Order ID [{}]'.format(order_id))
 
-        proc_cfg = config.retrieve_cfg(PROC_CFG_FILENAME)
-        proc_cfg = override_config(order, proc_cfg)
+        proc_cfg = create_parser(order['proc_cfg'])
         export_environment_variables(proc_cfg)
 
         # Retrieve all of the required auxiliary data.
@@ -186,7 +179,6 @@ def get_message_from_sqs():
     return(message)
 
 
-PROC_CFG_FILENAME = 'processing.conf'
 try:
     sqsqueue_name = os.environ['SQSBatchQueue']
 except KeyError as e:
@@ -207,16 +199,17 @@ def main():
     """
 
     while True:
+        # JDC Debug
+        print("Listening ...")
         message_list = get_message_from_sqs()
-        print("Starting to listen", len(message_list))
+        # JDC Debug
+        print("    Got {}".format(len(message_list)))
         if len(message_list) == 0:
             continue
         message = message_list[0]
 
         try:
             order = json.loads(message.body)
-            # JDC Debug
-            print("Got order " + order['orderid'])
         except Exception as e:
             print(str(e) + " message " + order)
             continue
@@ -225,7 +218,8 @@ def main():
 
         if not validate_order(order):
             continue
-
+        # JDC Debug
+        print("Got order " + order['orderid'])
         print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
         process_order(order)
 
