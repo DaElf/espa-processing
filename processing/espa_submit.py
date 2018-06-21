@@ -17,16 +17,6 @@ import config_utils as config
 import cli as cli
 
 
-def update_template(args, template):
-
-    order = cli.update_template(args, template)
-
-    order['dist_dir'] = args.dist_dir
-    order['dist_method'] = args.dist_method
-    order['work_dir'] = args.work_dir
-
-    return order
-
 def main():
     """Configures an order from the command line input and submits the
        order to the SQS queue specified in SQSBatchQueue
@@ -45,7 +35,8 @@ def main():
 
         template = cli.load_template(filename=cli.TEMPLATE_FILENAME)
 
-        order = update_template(args=args, template=template)
+        order = cli.update_template(args=args, template=template)
+        order['proc_cfg'] = proc_cfg.items('processing')
 
         try:
             sqs_queue_name = os.environ['SQSBatchQueue']
