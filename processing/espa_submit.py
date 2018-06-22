@@ -111,7 +111,7 @@ def submit_batch_job(order):
 #                   {"name": "sceneToProcess", "value": keyName}
 #               ]
 #           },
-           parameters = {'order': s3_key})
+           parameters = {'order': order['orderid']})
 
 
 def main():
