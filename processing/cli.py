@@ -977,7 +977,7 @@ def archive_log_s3(order, base_log=None):
     for key in [base_log, proc_log]:
         if key is None:
             continue
-        print("stashing log file [{}]", key)
+        print("stashing log file [{}]".format(key))
         try:
             source_file = key
             logger.info('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
