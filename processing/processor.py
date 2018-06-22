@@ -1209,7 +1209,7 @@ class LandsatProcessor(CDRProcessor):
             # Extract stuff from the product information
             product_prefix = sensor.info(product_id).product_prefix
 
-            product_name = ('{0}-SC{1}{2}{3}{4}{5}{6}'
+            product_name = ('{0}-SC_{1}{2}{3}_{4}{5}{6}'
                             .format(product_prefix,
                                     str(ts.year).zfill(4),
                                     str(ts.month).zfill(2),

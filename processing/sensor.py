@@ -109,7 +109,7 @@ def landsat_sensor_info(product_id):
     date_acquired = datetime.datetime.strptime(date_acq, '%Y%m%d').date()
 
     # Determine the product prefix
-    product_prefix = ('{0}{1:>03}{2:>03}{3:>08}{4:>02}{5:>02}'
+    product_prefix = ('{0}_{1:>03}_{2:>03}_{3:>08}_{4:>02}_{5:>02}'
                       .format(sensor_code, path, row, date_acq,
                               collection_id, tier))
 
