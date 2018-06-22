@@ -111,7 +111,7 @@ def validate_order(order):
         options = order['options']
         proc_cfg = order['proc_cfg']
     except KeyError as e:
-        print("Error in order: [{}] not present".format(str(e)))
+        print("Error in order: [{}] not present".format(e))
         return False
 
     return True
@@ -141,6 +141,8 @@ def process_order(order):
             if transfer.retrieve_aux_data(order_id) != 0:
                 raise CliException('Failed to retrieve auxiliary data.')
 
+        #JDC Debug
+        print("Changing to work dir " + proc_cfg.get('processing', 'espa_work_dir'))
         # Change to the processing directory
         os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
 
@@ -173,24 +175,23 @@ def get_message_from_sqs():
         message <list>: A list of messages that were read
     """
 
+    try:
+        sqsqueue_name = os.environ['SQSBatchQueue']
+    except KeyError as e:
+        print("Error: environment variable SQSBatchQueue not defined")
+        exit(1)
+
+    try:
+        aws_region = os.environ['AWSRegion']
+    except KeyError:
+        sqs = boto3.resource('sqs')
+    else:
+        sqs = boto3.resource('sqs', region_name=aws_region)
+
     queue = sqs.get_queue_by_name(QueueName=sqsqueue_name)
     message = queue.receive_messages(WaitTimeSeconds=20,
             MaxNumberOfMessages=1)
     return(message)
-
-
-try:
-    sqsqueue_name = os.environ['SQSBatchQueue']
-except KeyError as e:
-    print("Error: environment variable SQSBatchQueue not defined")
-    exit(1)
-
-try:
-    aws_region = os.environ['AWSRegion']
-except KeyError:
-    sqs = boto3.resource('sqs')
-else:
-    sqs = boto3.resource('sqs', region_name=aws_region)
 
 
 def main():
@@ -219,7 +220,7 @@ def main():
         if not validate_order(order):
             continue
         # JDC Debug
-        print("Got order " + order['orderid'])
+        print("Processing order " + order['orderid'])
         print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
         process_order(order)
 
