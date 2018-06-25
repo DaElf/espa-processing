@@ -9,13 +9,13 @@ import json
 from argparse import ArgumentParser
 
 
-import settings
-import utilities as util
-import config_utils as config
-from logging_tools import EspaLogging
+from . import settings
+from . import utilities as util
+from . import config_utils as config
+from .logging_tools import EspaLogging
 import logging
-import processor
-import transfer
+from . import processor
+from . import transfer
 import boto3
 
 
@@ -1047,7 +1047,7 @@ def main():
                 raise
 
         if args.debug:
-            print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
+            print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
 
         try:
             # All processors are implemented in the processor module

@@ -13,18 +13,18 @@ import shutil
 import glob
 from time import sleep
 import boto3
-from urlparse import urlparse
+from urllib.parse import urlparse
 from subprocess import check_output, CalledProcessError, check_call
-from simple_sum import distribute_sum_directory
+from .simple_sum import distribute_sum_directory
 
-import settings
-import utilities
-from logging_tools import EspaLogging
-from environment import (Environment, DISTRIBUTION_METHOD_LOCAL,
+from . import settings
+from . import utilities
+from .logging_tools import EspaLogging
+from .environment import (Environment, DISTRIBUTION_METHOD_LOCAL,
     DISTRIBUTION_METHOD_REMOTE, DISTRIBUTION_METHOD_S3)
-from espa_exception import ESPAException
-import sensor
-import transfer
+from .espa_exception import ESPAException
+from . import sensor
+from . import transfer
 
 
 def package_product(immutability, source_directory, destination_directory,
@@ -102,7 +102,7 @@ def package_product(immutability, source_directory, destination_directory,
         # Change file permissions
         logger.info("Changing file permissions on %s to 0644"
                     % product_full_path)
-        os.chmod(product_full_path, 0644)
+        os.chmod(product_full_path, 0o644)
 
         # Verify that the archive is good
 #        output = ''

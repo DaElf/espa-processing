@@ -4,8 +4,8 @@ import sys
 import os
 import tempfile
 import logging
-import settings
-from logging_tools import EspaLogging
+from . import settings
+from .logging_tools import EspaLogging
 
 
 def distribute_sum_directory(path='.', product_name='sum'):

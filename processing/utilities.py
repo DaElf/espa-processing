@@ -8,7 +8,7 @@ License: NASA Open Source Agreement 1.3
 import os
 import errno
 import datetime
-import commands
+import subprocess
 import random
 import resource
 from collections import defaultdict
@@ -85,7 +85,7 @@ def execute_cmd(cmd):
     """
 
     output = ''
-    (status, output) = commands.getstatusoutput(cmd)
+    (status, output) = subprocess.getstatusoutput(cmd)
 
     message = ''
     if status < 0:
@@ -179,7 +179,7 @@ def create_directory(directory):
 
     # Create/Make sure the directory exists
     try:
-        os.makedirs(directory, mode=0755)
+        os.makedirs(directory, mode=0o755)
     except OSError as ose:
         if ose.errno == errno.EEXIST and os.path.isdir(directory):
             # With how we operate, as long as it is a directory, we do not

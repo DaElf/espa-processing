@@ -8,11 +8,11 @@ License: NASA Open Source Agreement 1.3
 import os
 import shutil
 import glob
-from cStringIO import StringIO
+from io import StringIO
 
-import settings
-from logging_tools import EspaLogging
-from espa_exception import ESPAException
+from . import settings
+from .logging_tools import EspaLogging
+from .espa_exception import ESPAException
 
 
 def fix_file(filename):

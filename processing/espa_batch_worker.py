@@ -8,21 +8,21 @@ import socket
 import json
 import boto3
 import logging
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
-import settings as settings
-import utilities as util
-import config_utils as config
-from logging_tools import EspaLogging
-import processor as processor
-import transfer as transfer
-from cli import archive_log_s3
-from cli import archive_log_files
-from cli import copy_log_file
-from cli import export_environment_variables
+from . import settings as settings
+from . import utilities as util
+from . import config_utils as config
+from .logging_tools import EspaLogging
+from . import processor as processor
+from . import transfer as transfer
+from .cli import archive_log_s3
+from .cli import archive_log_files
+from .cli import copy_log_file
+from .cli import export_environment_variables
 
-from espa_worker import validate_order
-from espa_worker import process_order
+from .espa_worker import validate_order
+from .espa_worker import process_order
 
 
 APP_NAME = 'ESPA-Processing-Worker'
@@ -62,7 +62,7 @@ def main():
 
     # JDC Debug
     print("Processing order " + order['orderid'])
-    print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
+    print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
     process_order(order)
 
 

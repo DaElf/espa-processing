@@ -67,7 +67,7 @@ class APIServer(object):
 
         resp, status = self.request('get', config_url, status=200)
 
-        if key in resp.keys():
+        if key in list(resp.keys()):
             return resp[key]
 
     def get_scenes_to_process(self, limit, user, priority, product_type):

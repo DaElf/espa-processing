@@ -16,19 +16,19 @@ from time import sleep
 from argparse import ArgumentParser
 
 # local objects and methods
-import settings
-import utilities
-import sensor
-from logging_tools import EspaLogging
+from . import settings
+from . import utilities
+from . import sensor
+from .logging_tools import EspaLogging
 
 # local objects and methods
-from environment import Environment
-import parameters
-import processor
+from .environment import Environment
+from . import parameters
+from . import processor
 
-import api_interface
+from . import api_interface
 
-from config_utils import retrieve_cfg
+from .config_utils import retrieve_cfg
 
 
 MAPPER_LOG_PREFIX = 'espa-mapper'

@@ -16,25 +16,25 @@ import datetime
 import copy
 import subprocess
 import json
-from cStringIO import StringIO
+from io import StringIO
 from collections import defaultdict, namedtuple
 
 
 from espa import Metadata
 
 
-import settings
-import utilities
-from logging_tools import EspaLogging
-import espa_exception as ee
-import sensor
-import initialization
-import parameters
-import landsat_metadata
-import staging
-import transfer
-import distribution
-import product_formatting
+from . import settings
+from . import utilities
+from .logging_tools import EspaLogging
+from . import espa_exception as ee
+from . import sensor
+from . import initialization
+from . import parameters
+from . import landsat_metadata
+from . import staging
+from . import transfer
+from . import distribution
+from . import product_formatting
 
 
 class ProductProcessor(object):
@@ -394,7 +394,7 @@ class CustomizationProcessor(ProductProcessor):
         # The provided output format is used later
         cmd.extend(['--output-format', 'envi'])
 
-        return map(str, cmd)
+        return list(map(str, cmd))
 
     def customize_products(self):
         """Performs the customization of the products
@@ -1879,7 +1879,7 @@ class PlotProcessor(ProductProcessor):
         # Call the base class parameter validation
         super(PlotProcessor, self).validate_parameters()
 
-    def process_band_type(self, (search_list, band_type)):
+    def process_band_type(self, xxx_todo_changeme):
         """A generic processing routine which finds the files to process based
            on the provided search criteria
 
@@ -1887,7 +1887,7 @@ class PlotProcessor(ProductProcessor):
         filenames.  If no files are found, no plots or combined statistics
         will be generated.
         """
-        # Build a command line arguments list
+        (search_list, band_type) = xxx_todo_changeme
         cmd = ['espa_plotting.py',
                "--band_type '{}'".format(band_type),
                "--search_list '{}'".format(json.dumps(search_list))]
@@ -1914,7 +1914,7 @@ class PlotProcessor(ProductProcessor):
         os.chdir(self._work_dir)
 
         try:
-            map(self.process_band_type, self.work_list)
+            list(map(self.process_band_type, self.work_list))
 
         finally:
             # Change back to the previous directory

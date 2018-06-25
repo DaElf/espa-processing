@@ -8,16 +8,16 @@ License: NASA Open Source Agreement 1.3
 import os
 import shutil
 import ftplib
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import requests
 import random
 import boto3
 from time import sleep
 import fnmatch
 
-import settings
-import utilities
-from logging_tools import EspaLogging
+from . import settings
+from . import utilities
+from .logging_tools import EspaLogging
 
 
 def copy_files_to_directory(source_files, destination_directory):
@@ -122,7 +122,7 @@ def ftp_from_remote_location(username, pword, host, remotefile, localfile):
     if not remotefile.startswith('/'):
         remotefile = ''.join(['/', remotefile])
 
-    password = urllib2.unquote(pword)
+    password = urllib.parse.unquote(pword)
 
     url = 'ftp://%s/%s' % (host, remotefile)
 
@@ -169,7 +169,7 @@ def ftp_to_remote_location(username, pword, localfile, host, remotefile):
     if not remotefile.startswith('/'):
         remotefile = ''.join(['/', remotefile])
 
-    password = urllib2.unquote(pword)
+    password = urllib.parse.unquote(pword)
 
     logger.info("Transferring file from %s to %s"
                 % (localfile, 'ftp://%s/%s' % (host, remotefile)))
@@ -410,7 +410,7 @@ def download_file_url(download_url, destination_file):
         Using a URL download the specified file to the destination.
     '''
 
-    download_url = urllib2.unquote(download_url)
+    download_url = urllib.parse.unquote(download_url)
 
     if download_url.startswith('http'):
         http_transfer_file(download_url, destination_file)
@@ -511,7 +511,7 @@ def retrieve_l8_aux_data(order_id):
     # determine the directory for the output auxiliary data files to be
     # processed.  create the directory if it doesn't exist.
     outputDir = '{}/LDCMLUT'.format(auxdir)
-    os.makedirs(outputDir, 0777)
+    os.makedirs(outputDir, 0o777)
 
     file_list = ['AERO_LUT_V3.0-URBANCLEAN-V2.0.ASCII',
                  'ANGLE_NEW.hdf',
@@ -547,7 +547,7 @@ def retrieve_l8_aux_data(order_id):
     aux_year = aux_file[5:9]
 
     outputDir = '{}/LADS/{}'.format(auxdir, aux_year)
-    os.makedirs(outputDir, 0777)
+    os.makedirs(outputDir, 0o777)
 
     # Download the file.
     url = '{}/LADS/{}'.format(url_base, aux_file)
@@ -596,7 +596,7 @@ def retrieve_l47_aux_data(order_id):
 
     # Create the auxiliary directory.
     outputDir = '{}/REANALYSIS/RE_{}'.format(auxdir, aux_year)
-    os.makedirs(outputDir, 0777)
+    os.makedirs(outputDir, 0o777)
 
     # Download the file.
     url = '{}/REANALYSIS/{}'.format(url_base, aux_file)
@@ -608,7 +608,7 @@ def retrieve_l47_aux_data(order_id):
 
     # Create the auxiliary directory.
     outputDir = '{}/EP_TOMS/ozone_{}'.format(auxdir, aux_year)
-    os.makedirs(outputDir, 0777)
+    os.makedirs(outputDir, 0o777)
 
     # Download the file.
     url = '{}/EP_TOMS/{}'.format(url_base, aux_file)

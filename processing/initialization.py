@@ -10,8 +10,8 @@ License: NASA Open Source Agreement 1.3
 import os
 
 
-import utilities
-from environment import (Environment, DISTRIBUTION_METHOD_LOCAL,
+from . import utilities
+from .environment import (Environment, DISTRIBUTION_METHOD_LOCAL,
     DISTRIBUTION_METHOD_REMOTE, DISTRIBUTION_METHOD_S3)
 
 

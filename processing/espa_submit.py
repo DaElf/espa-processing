@@ -11,10 +11,10 @@ import random
 from argparse import ArgumentParser
 
 
-import settings
-import utilities as util
-import config_utils as config
-import cli as cli
+from . import settings
+from . import utilities as util
+from . import config_utils as config
+from . import cli as cli
 
 
 def parse_command_line():

@@ -9,9 +9,9 @@ import os
 import glob
 
 
-import settings
-import utilities
-from logging_tools import EspaLogging
+from . import settings
+from . import utilities
+from .logging_tools import EspaLogging
 
 
 def reformat(metadata_filename, work_directory, input_format, output_format):

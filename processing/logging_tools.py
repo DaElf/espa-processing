@@ -10,7 +10,7 @@ import os
 import logging
 import logging.config
 
-import settings
+from . import settings
 
 
 class EspaLoggerException(Exception):

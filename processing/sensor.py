@@ -392,7 +392,7 @@ def info(product_id):
     test_id = product_id.lower()
 
     # Search through the dictionary and return the object for the match
-    for key in mapping.iterkeys():
+    for key in list(mapping.keys()):
         if re.match(mapping[key][0], test_id):
             return mapping[key][1](product_id)
 

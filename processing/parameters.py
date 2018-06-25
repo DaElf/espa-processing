@@ -8,9 +8,9 @@ License: NASA Open Source Agreement 1.3
 
 import os
 
-import settings
-from logging_tools import EspaLogging
-import sensor
+from . import settings
+from .logging_tools import EspaLogging
+from . import sensor
 
 
 # Settings for what is supported

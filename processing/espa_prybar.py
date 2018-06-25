@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 
-from cli import *
+from .cli import *
 import boto3
 import random
 
@@ -45,7 +45,7 @@ def main():
         queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
         response = queue.send_message(MessageBody=json.dumps(order), MessageGroupId="ESPA", MessageDeduplicationId=str(random.getrandbits(128)))
 
-        print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
+        print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
 
     except Exception as e:
 	print(e)
