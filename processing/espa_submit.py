@@ -34,24 +34,32 @@ def parse_command_line():
                           dest='batch_mode',
                           default=False,
                           help='Queue job for batch processing')
+    parser.add_argument('--queue',
+                          action='store',
+                          type=str,
+                          dest='job_queue',
+                          default=None,
+                          help='Queue to submit job')
 
     return parser.parse_args()
 
 
 def submit_SQS_job(order):
 
-    try:
-        sqs_queue_name = os.environ['SQSBatchQueue']
-    except Exception as e:
-        print('Environment variable {} not set'.format(e))
-        raise
-
-    try:
-        aws_region = os.environ['AWSRegion']
-    except KeyError:
-        sqs = boto3.resource('sqs')
+    sqs_queue_name = None
+    if args.job_queue is not None:
+        sqs_queue_name = args.job_queue
+    elseif 'SQSQueue' in os.environ:
+           sqs_queue_name = os.environ['SQSQueue']
     else:
-        sqs = boto3.resource('sqs', region_name=aws_region)
+        sys.stderr.write("Error: queue name not set\n" +
+                "       Must use --queue or set SQSQueue\n")
+        sys.exit(1)
+
+    if 'AWSRegion' in os.environ:
+        sqs = boto3.resource('sqs', region_name = os.environ['AWSRegion'])
+    else:
+        sqs = boto3.resource('sqs')
 
     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
     response = queue.send_message(MessageBody=json.dumps(order),
@@ -91,6 +99,7 @@ def submit_batch_job(order):
 
     order_id = order['orderid']
     s3_key = order_id + '/' + order_id + '.json'
+    s3_url = 's3://' + job_bucket + '/' + s3_key
 
     s3obj = s3.Object(job_bucket, s3_key)
     order_str = json.dumps(order)
@@ -111,7 +120,7 @@ def submit_batch_job(order):
 #                   {"name": "sceneToProcess", "value": keyName}
 #               ]
 #           },
-           parameters = {'order': order['orderid']})
+           parameters = {'order_url': s3_url})
 
 
 def main():
