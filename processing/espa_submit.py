@@ -49,7 +49,7 @@ def submit_SQS_job(order):
     sqs_queue_name = None
     if args.job_queue is not None:
         sqs_queue_name = args.job_queue
-    elseif 'SQSQueue' in os.environ:
+    elif 'SQSQueue' in os.environ:
            sqs_queue_name = os.environ['SQSQueue']
     else:
         sys.stderr.write("Error: queue name not set\n" +
@@ -79,9 +79,9 @@ def submit_batch_job(order):
         order <dict>: Dictionary with the job parameters
     """
 
-    job_definition = 'JobDefinition-2e3ad758b69ada8'  # JDC Debug
+    job_definition = 'ESPA_ProcessJob'  # JDC Debug
     job_bucket = 'jdc-test-dev'  # JDC debug
-    queue_name = 'JobQueue-55396c72757b39d'  # JDC Debug
+    queue_name = 'ESPA_ProcessJobQueue'  # JDC Debug
 
     if 'BatchQueue' in os.environ:
         queue_name = os.environ['BatchQueue']
