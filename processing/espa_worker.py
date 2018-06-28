@@ -50,10 +50,10 @@ def cli_log_setup(order):
     EspaLogging.configure_base_logger(filename=cli_log_filename(order),
                                           level=logging.INFO)
     logger = EspaLogging.get_logger('base')
-    logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
-                                                          stream_name='base-'+
-                                                          order['orderid']+
-                                                          '-'+order['product_id']))
+#    logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
+#                                                          stream_name='base-'+
+#                                                          order['orderid']+
+#                                                          '-'+order['product_id']))
 
     # Configure the processing logger for this request
     EspaLogging.configure(settings.PROCESSING_LOGGER,
