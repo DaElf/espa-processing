@@ -71,8 +71,8 @@ def main():
         sys.exit(1)
 
     # JDC Debug
-    print('Processing order ' + order['orderid'])
-    print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
+    #print('Processing order ' + order['orderid'])
+    #print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
     process_order(order)
 
 

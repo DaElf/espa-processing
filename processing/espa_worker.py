@@ -151,7 +151,7 @@ def process_order(order):
                 raise CliException('Failed to retrieve auxiliary data.')
 
         #JDC Debug
-        print("Changing to work dir " + proc_cfg.get('processing', 'espa_work_dir'))
+        logger.info("Changing to work dir " + proc_cfg.get('processing', 'espa_work_dir'))
         # Change to the processing directory
         os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
 
@@ -164,7 +164,6 @@ def process_order(order):
             clear_environment_variables(proc_cfg)
 
     except Exception as e:
-        print(e)
         logger.exception('*** Errors during processing ***')
 
     if not order['bridge_mode']:
@@ -210,10 +209,10 @@ def main():
 
     while True:
         # JDC Debug
-        print("Listening ...")
+        #print("Listening ...")
         message_list = get_message_from_sqs()
         # JDC Debug
-        print("    Got {}".format(len(message_list)))
+        #print("    Got {}".format(len(message_list)))
         if len(message_list) == 0:
             continue
         message = message_list[0]
@@ -227,10 +226,12 @@ def main():
             message.delete()
 
         if not validate_order(order):
+            print("could not validate order skipping")
+            print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
             continue
         # JDC Debug
-        print("Processing order " + order['orderid'])
-        print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
+        #print("Processing order " + order['orderid'])
+        #print json.dumps(order, sort_keys=True, indent=4, separators=(',', ': '))
         process_order(order)
 
 
