@@ -44,7 +44,7 @@ def parse_command_line():
     return parser.parse_args()
 
 
-def submit_SQS_job(order):
+def submit_SQS_job(args, order):
 
     sqs_queue_name = None
     if args.job_queue is not None:
@@ -67,7 +67,7 @@ def submit_SQS_job(order):
             MessageDeduplicationId = str(random.getrandbits(128)))
 
 
-def submit_batch_job(order):
+def submit_batch_job(args, order):
     """Submit a job to the batch queue
 
     Create a directory with the order ID in the job bucket.  Put
@@ -81,10 +81,18 @@ def submit_batch_job(order):
 
     job_definition = 'ESPA_ProcessJob'  # JDC Debug
     job_bucket = 'jdc-test-dev'  # JDC debug
-    queue_name = 'ESPA_ProcessJobQueue'  # JDC Debug
+    queue_name = 'ESPA_ProcessJobQueueNOT'  # JDC Debug
 
-    if 'BatchQueue' in os.environ:
+    if args.job_queue is not None:
+        queue_name = args.job_queue
+    elif 'BatchQueue' in os.environ:
         queue_name = os.environ['BatchQueue']
+    else:
+        sys.stderr.write("Error: queue name not set\n" +
+                "       Must use --queue or set BatchQueue\n")
+        sys.exit(1)
+
+
     if 'espaJobBucket' in os.environ:
         job_bucket = os.environ['espaJobBucket']
     if 'JobDefinition' in os.environ:
@@ -141,15 +149,18 @@ def main():
             raise CliError('Must specify --pixel-size-units if specifying'
                            ' --pixel-size')
 
-        template = cli.load_template(filename=cli.TEMPLATE_FILENAME)
+        if "ESPA_PROCESS_TEMPLATE" in os.environ:
+            template = cli.load_template(filename=os.environ["ESPA_PROCESS_TEMPLATE"])
+        else:
+            template = cli.load_template(filename=TEMPLATE_FILENAME)
 
         order = cli.update_template(args=args, template=template)
         order['proc_cfg'] = proc_cfg.items('processing')
 
         if batch_mode:
-            submit_batch_job(order)
+            submit_batch_job(args,order)
         else:
-            submit_SQS_job(order)
+            submit_SQS_job(args,order)
 
     except Exception as e:
         sys.stderr.write('Error: {}\n'.format(e))
@@ -159,4 +170,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
