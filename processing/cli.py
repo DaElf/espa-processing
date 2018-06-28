@@ -1038,7 +1038,10 @@ def main():
 
         export_environment_variables(proc_cfg)
 
-        template = load_template(filename=TEMPLATE_FILENAME)
+        if "ESPA_PROCESS_TEMPLATE" in os.environ:
+            template = load_template(filename=os.environ["ESPA_PROCESS_TEMPLATE"])
+        else:
+            template = load_template(filename=TEMPLATE_FILENAME)
 
         order = update_template(args=args, template=template)
 
