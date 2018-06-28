@@ -13,7 +13,7 @@ Source0:        espa-python-library.tar.gz
 BuildRequires: python34-devel
 BuildRequires: python34-setuptools
 BuildRequires: python-setuptools
-#Requires:       
+Requires:      python-lxml
 
 %description
 ESPA python library
