@@ -20,6 +20,7 @@ from cli import archive_log_s3
 from cli import archive_log_files
 from cli import copy_log_file
 from cli import export_environment_variables
+import watchtower
 
 
 APP_NAME = 'ESPA-Processing-Worker'
@@ -48,14 +49,22 @@ def cli_log_setup(order):
     # Configure the base logger for this request
     EspaLogging.configure_base_logger(filename=cli_log_filename(order),
                                           level=logging.INFO)
+    logger = EspaLogging.get_logger('base')
+    logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
+                                                          stream_name='base-'+
+                                                          order['orderid']+
+                                                          '-'+order['product_id']))
 
     # Configure the processing logger for this request
     EspaLogging.configure(settings.PROCESSING_LOGGER,
                           order=order['orderid'],
                           product=order['product_id'],
                           debug=order['options']['debug'])
-    # Get a logger
-    logger = EspaLogging.get_logger('base')
+    espa_logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
+    espa_logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
+                                                               stream_name='process-'+
+                                                               order['orderid']+
+                                                               '-'+order['product_id']))
 
     return logger
 

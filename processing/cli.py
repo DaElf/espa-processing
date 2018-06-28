@@ -17,6 +17,7 @@ import logging
 import processor
 import transfer
 import boto3
+import watchtower
 
 
 APP_NAME = 'ESPA-Processing'
@@ -1004,14 +1005,24 @@ def main():
     EspaLogging.configure_base_logger(filename=cli_log_filename(args),
                                           level=logging.INFO)
 
+    # CLI will use the base logger
+    logger = EspaLogging.get_logger('base')
+    logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
+                                                          stream_name='base-'+
+                                                          args.order_id+
+                                                          '-'+args.product_id))
+
     # Configure the processing logger for this request
     EspaLogging.configure(settings.PROCESSING_LOGGER,
                           order=args.order_id,
                           product=args.product_id,
                           debug=args.debug)
+    espa_logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
+    espa_logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
+                                                               stream_name='process-'+
+                                                               args.order_id+
+                                                               '-'+args.product_id))
 
-    # CLI will use the base logger
-    logger = EspaLogging.get_logger('base')
 
     logger.info('*** Begin ESPA Processing on host [{}] ***'
                 .format(socket.gethostname()))
