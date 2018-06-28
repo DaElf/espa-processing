@@ -114,7 +114,7 @@ def submit_batch_job(args, order):
     s3obj.put(Body = order_str)
 
     client = boto3.client('batch')
-    print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
+#    print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
     client.submit_job(
             jobName = order['orderid'],
             jobQueue = queue_name,
