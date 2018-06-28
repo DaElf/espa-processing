@@ -26,6 +26,7 @@ Requires:       python-espa
 Requires:       python-requests
 Requires:       python2-boto3
 Requires:       python-gdal
+Requires:	python-watchtower
 
 
 %description
