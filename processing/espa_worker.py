@@ -174,7 +174,8 @@ def process_order(order):
 
     if logger is not None:
         logger.info('*** ESPA Processing Complete ***')
-        EspaLogging.shutdown()
+
+    EspaLogging.shutdown()
 
 def get_message_from_sqs():
     """Read a message from the SQS queue
