@@ -41,7 +41,7 @@ def cli_log_filename(order):
         orderid = order['orderid']
     if order['product_id'] is not None:
         product_id = order['product_id']
-    return 'cli-{}-{}.log'.format(orderid, product_id)
+    return 'espa-worker-{}-{}.log'.format(orderid, product_id)
 
 
 def cli_log_setup(order):
