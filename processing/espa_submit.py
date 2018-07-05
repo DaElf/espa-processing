@@ -8,6 +8,7 @@ import socket
 import json
 import boto3
 import random
+import string
 from argparse import ArgumentParser
 
 
@@ -40,6 +41,12 @@ def parse_command_line():
                           dest='job_queue',
                           default=None,
                           help='Queue to submit job')
+    parser.add_argument('--batch-command',
+                          action='store',
+                          type=str,
+                          dest='batch_cmd',
+                          default=None,
+                          help='Command to run in batch container')
 
     return parser.parse_args()
 
@@ -114,21 +121,26 @@ def submit_batch_job(args, order):
     s3obj.put(Body = order_str)
 
     client = boto3.client('batch')
-#    print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
-    client.submit_job(
-            jobName = order['orderid'],
-            jobQueue = queue_name,
-            jobDefinition = job_definition,
-#           containerOverrides = {  # JDC XXX -- dow we need this?
-#               "vcpus":2,
-#               "memory":2000,
-#               "environment": [
-#                   {"name": "sourceBucket", "value": bucketName},
-#                   {"name": "destBucket", "value": destBucket},
-#                   {"name": "sceneToProcess", "value": keyName}
-#               ]
-#           },
-           parameters = {'order_url': s3_url})
+    # JDC Debug
+#   print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
+    if 'batch_cmd' in order:
+        client.submit_job(
+                jobName = order['orderid'],
+                jobQueue = queue_name,
+                jobDefinition = job_definition,
+                parameters = {'order_url': s3_url},
+                containerOverrides = {
+                    'command': [order['batch_cmd'], 'Ref::order_url']
+                })
+    else:
+        client.submit_job(
+                jobName = order['orderid'],
+                jobQueue = queue_name,
+                jobDefinition = job_definition,
+                parameters = {'order_url': s3_url})
+
+    # JDC Debug
+    print("Submitted job {} to queue {}".format(order['orderid'], queue_name))
 
 
 def main():
@@ -137,6 +149,9 @@ def main():
     """
 
     args = parse_command_line()
+    if args.order_id.lower() == 'random':
+        args.order_id = ''.join(random.choice(string.ascii_lowercase) \
+                for _ in range(4)) + '-00001'
     batch_mode = args.batch_mode
 
     proc_cfg = config.retrieve_cfg(cli.PROC_CFG_FILENAME)
@@ -152,9 +167,11 @@ def main():
         if "ESPA_PROCESS_TEMPLATE" in os.environ:
             template = cli.load_template(filename=os.environ["ESPA_PROCESS_TEMPLATE"])
         else:
-            template = cli.load_template(filename=TEMPLATE_FILENAME)
+            template = cli.load_template(filename=cli.TEMPLATE_FILENAME)
 
         order = cli.update_template(args=args, template=template)
+        if args.batch_cmd is not None:
+            order['batch_cmd'] = args.batch_cmd
         order['proc_cfg'] = proc_cfg.items('processing')
 
         if batch_mode:
