@@ -9,6 +9,7 @@ import json
 import boto3
 import logging
 from ConfigParser import ConfigParser
+import watchtower
 
 import settings as settings
 import utilities as util
@@ -20,7 +21,6 @@ from cli import archive_log_s3
 from cli import archive_log_files
 from cli import copy_log_file
 from cli import export_environment_variables
-import watchtower
 
 
 APP_NAME = 'ESPA-Processing-Worker'
@@ -50,21 +50,11 @@ def cli_log_setup(order):
     EspaLogging.configure_base_logger(filename=cli_log_filename(order),
                                           level=logging.INFO)
     logger = EspaLogging.get_logger('base')
-#    logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
-#                                                          stream_name='base-'+
-#                                                          order['orderid']+
-#                                                          '-'+order['product_id']))
-
-    # Configure the processing logger for this request
-    EspaLogging.configure(settings.PROCESSING_LOGGER,
-                          order=order['orderid'],
-                          product=order['product_id'],
-                          debug=order['options']['debug'])
-    espa_logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
-    espa_logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
-                                                               stream_name='process-'+
-                                                               order['orderid']+
-                                                               '-'+order['product_id']))
+    logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
+                                                      create_log_group=False,
+                                                      stream_name='process-'+
+                                                      order['orderid']+
+                                                      '-'+order['product_id']))
 
     return logger
 
@@ -135,6 +125,9 @@ def process_order(order):
 
     current_directory = os.getcwd()
     logger = cli_log_setup(order)
+    if logger is None:
+        sys.stderr.write("Error: Can't create logger\n")
+        sys.exit(1)
 
     order_id = order['orderid']
     try:
@@ -150,8 +143,6 @@ def process_order(order):
             if transfer.retrieve_aux_data(order_id) != 0:
                 raise CliException('Failed to retrieve auxiliary data.')
 
-        #JDC Debug
-        logger.info("Changing to work dir " + proc_cfg.get('processing', 'espa_work_dir'))
         # Change to the processing directory
         os.chdir(proc_cfg.get('processing', 'espa_work_dir'))
 
@@ -166,16 +157,16 @@ def process_order(order):
     except Exception as e:
         logger.exception('*** Errors during processing ***')
 
+    logger.info('*** ESPA Processing Complete ***')
+
     if not order['bridge_mode']:
         archive_log_files(order, proc_cfg, proc_status)
 
     if order['dist_method'] is not None and order['dist_method'] == 's3':
         archive_log_s3(order=order, base_log=cli_log_filename(order))
 
-    if logger is not None:
-        logger.info('*** ESPA Processing Complete ***')
-
     EspaLogging.shutdown()
+
 
 def get_message_from_sqs():
     """Read a message from the SQS queue

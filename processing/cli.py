@@ -936,7 +936,6 @@ def archive_log_files(args, proc_cfg, proc_status):
     """
 
     base_log = cli_log_filename(args)
-    proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
     dist_path = proc_cfg.get('processing', 'espa_log_archive')
     destination_path = os.path.join(dist_path, args.order_id)
 
@@ -945,14 +944,10 @@ def archive_log_files(args, proc_cfg, proc_status):
 
     # Copy them
     copy_log_file(base_log, destination_path, proc_status)
-    copy_log_file(proc_log, destination_path, proc_status)
 
     # Remove the source versions
     if os.path.exists(base_log):
         os.unlink(base_log)
-
-    if os.path.exists(proc_log):
-        os.unlink(proc_log)
 
 
 def archive_log_s3(order, base_log=None):
@@ -964,7 +959,6 @@ def archive_log_s3(order, base_log=None):
     """
 
     logger = EspaLogging.get_logger('base')
-    proc_log = EspaLogging.get_filename(settings.PROCESSING_LOGGER)
 
     if order['options']['dist_s3_bucket'] is not None:
         bucket_name = order['options']['dist_s3_bucket']
@@ -975,7 +969,7 @@ def archive_log_s3(order, base_log=None):
     s3 = boto3.resource('s3')
     s3_bucket = s3.Bucket(bucket_name)
 
-    for key in [base_log, proc_log]:
+    for key in [base_log]:
         if key is None:
             continue
         print("stashing log file [{}]".format(key))
@@ -1008,21 +1002,9 @@ def main():
     # CLI will use the base logger
     logger = EspaLogging.get_logger('base')
     logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
-                                                          stream_name='base-'+
-                                                          args.order_id+
-                                                          '-'+args.product_id))
-
-    # Configure the processing logger for this request
-    EspaLogging.configure(settings.PROCESSING_LOGGER,
-                          order=args.order_id,
-                          product=args.product_id,
-                          debug=args.debug)
-    espa_logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
-    espa_logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
-                                                               stream_name='process-'+
-                                                               args.order_id+
-                                                               '-'+args.product_id))
-
+                                                      stream_name='process-'+
+                                                      args.order_id+
+                                                      '-'+args.product_id))
 
     logger.info('*** Begin ESPA Processing on host [{}] ***'
                 .format(socket.gethostname()))

@@ -106,7 +106,7 @@ LANDSAT_ST_SCALE = 0.1
 '''
 LOGGING DEFINITIONS
 '''
-PROCESSING_LOGGER = 'espa.processing'
+PROCESSING_LOGGER = 'base'
 
 LOGGER_CONFIG = {
     'version': 1,
