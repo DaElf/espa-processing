@@ -265,6 +265,9 @@ class EspaLogging(object):
         """
 
         for handler in logging.root.handlers[:]:
+            handler.flush()
+            handler.close()
+        for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
         logging.shutdown()
         cls.basic_logger_configured = False
