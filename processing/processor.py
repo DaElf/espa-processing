@@ -1008,8 +1008,7 @@ class LandsatProcessor(CDRProcessor):
             return
 
         cmd = ['surface_water_extent.py',
-               '--xml', self._xml_filename,
-               '--verbose']
+               '--xml', self._xml_filename]
 
         cmd = ' '.join(cmd)
 
