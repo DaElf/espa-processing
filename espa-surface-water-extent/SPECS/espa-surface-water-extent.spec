@@ -1,12 +1,13 @@
-Name:           espa-surface-water-extent
-Version:        1.0
-Release:        1%{?dist}
-Summary:        ESPA surface water extent
+Name:		espa-surface-water-extent
+Version:	1.0
+Release:	1%{?dist}
+Summary:	ESPA surface water extent
 
 Group:		ESPA
 License:	NASA Open Source Agreement
-URL:            https://github.com/USGS-EROS/espa-surface-water-extent
-Source0:        espa-surface-water-extent.tar.gz
+URL:		https://github.com/USGS-EROS/espa-surface-water-extent
+Source0:	espa-surface-water-extent.tar.gz
+Patch0:	less_verbose.patch
 
 BuildRequires: libxml2-devel
 BuildRequires: pkgconfig
@@ -19,6 +20,7 @@ ESPA surface water extent
 
 %prep
 %setup -q -n espa-surface-water-extent
+%patch0 -p1 -b .less_verbose
 
 
 %build

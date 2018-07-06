@@ -1,0 +1,49 @@
+diff --git a/cfmask-based-water-detection/src/cfmask_water_detection.c b/cfmask-based-water-detection/src/cfmask_water_detection.c
+index f6dbc31..04e481c 100644
+--- a/cfmask-based-water-detection/src/cfmask_water_detection.c
++++ b/cfmask-based-water-detection/src/cfmask_water_detection.c
+@@ -337,13 +337,14 @@ main (int argc, char *argv[])
+         }
+ 
+         /* Let the user know where we are in the processing */
+-        if (pixel_index%99999 == 0)
++        if (verbose_flag && (pixel_index%99999 == 0))
+         {
+             printf("\rProcessed data element %d", pixel_index);
+         }
+     }
+     /* Status output cleanup to match the final output size */
+-    printf("\rProcessed data element %d\n", pixel_index);
++    if (verbose_flag)
++	    printf("\rProcessed data element %d\n", pixel_index);
+ 
+     float percent_clear = 100.0 * (float)total_clear_pixels
+                                   / (float)total_image_pixels;
+diff --git a/dswe/src/dswe.c b/dswe/src/dswe.c
+index cbedf3c..75a8e7a 100644
+--- a/dswe/src/dswe.c
++++ b/dswe/src/dswe.c
+@@ -905,7 +905,7 @@ main (int argc, char *argv[])
+         band_mask[index] = mask_value;
+ 
+         /* Let the user know where we are in the processing */
+-        if (index%99999 == 0)
++        if (verbose_flag && (index%99999 == 0))
+         {
+             printf ("\r");
+             printf ("Processed data element %d", index);
+@@ -913,9 +913,11 @@ main (int argc, char *argv[])
+     }
+ 
+     /* Status output cleanup to match the final output size */
+-    printf ("\r");
+-    printf ("Processed data element %d", index);
+-    printf ("\n");
++    if (verbose_flag) {
++            printf ("\r");
++            printf ("Processed data element %d", index);
++            printf ("\n");
++    }
+ 
+     /* Add the DSWE bands to the metadata file and generate the ENVI images
+        and header files */
