@@ -7,6 +7,7 @@ import string
 import json
 import boto3
 
+from espa_worker import cli_log_filename
 from espa_worker import validate_order
 from espa_worker import process_order
 
@@ -69,6 +70,12 @@ def main():
     if not validate_order(order):
         sys.stderr.write('Error: Invalid order\n')
         sys.exit(1)
+
+    # Put an S3 URL in the order for the log archiving function
+    log_archive_prefix =  '/'.join(s3_key.split('/')[:-1])
+    log_archive_url = '/'.join(['s3:/', job_bucket,
+            log_archive_prefix, cli_log_filename(order)])
+    order['log_archive_url'] = log_archive_url
 
     # JDC Debug
     print('Processing order ' + order['orderid'])

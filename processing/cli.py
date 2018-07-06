@@ -950,37 +950,46 @@ def archive_log_files(args, proc_cfg, proc_status):
         os.unlink(base_log)
 
 
-def archive_log_s3(order, base_log=None):
+def archive_log_s3(order, log_file=None):
     """Archive the log files for the current execution to S3
 
     Args:
         order <Dictionary>: Configuration
-        args <args>: Command line arguments
+        base_log <args>: Log file to archive
     """
 
     logger = EspaLogging.get_logger('base')
 
-    if order['options']['dist_s3_bucket'] is not None:
+    if 'log_archive_url' in order:
+        u_list = order['log_archive_url'].split('/')
+        bucket_name = u_list[2]
+        key_prefix = '/'.join(u_list[3:-1])
+        log_file = u_list[-1]
+    elif order['options']['dist_s3_bucket'] is not None:
         bucket_name = order['options']['dist_s3_bucket']
+        key_prefix = None
     else:
-        logger.error("Error dist_s3_bucket not defined")
+        logger.error("Error: destination S3 bucket not defined")
+        return
+
+    if log_file is None:
+        logger.error("Error: archive log file name not defined")
         return
 
     s3 = boto3.resource('s3')
     s3_bucket = s3.Bucket(bucket_name)
 
-    for key in [base_log]:
-        if key is None:
-            continue
-        print("stashing log file [{}]".format(key))
-        try:
-            source_file = key
-            logger.info('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + key)
-            s3_bucket.upload_file(source_file, key)
-            logger.info("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + key)
-        except Exception as excep:
-            logger.info(excep)
-            logger.info('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
+    print("stashing log file [{}]".format(log_file))
+    try:
+        source_file = log_file
+        if key_prefix is not None:
+            log_file = key_prefix + '/' + log_file
+        logger.info('PUTTING: ' + source_file + "\tTo: " + bucket_name + '/' + log_file)
+        s3_bucket.upload_file(source_file, log_file)
+        logger.info("S3 PUT completed: " + source_file + "\tTo: " + bucket_name + '/' + log_file)
+    except Exception as excep:
+        logger.info(excep)
+        logger.info('S3 PUT failed {0} to bucket {1}. Verify that they exist'.format(log_file, s3_bucket))
 
 
 PROC_CFG_FILENAME = 'processing.conf'
