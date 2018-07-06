@@ -16,7 +16,6 @@ def get_cfg_file_path(filename):
 
     if 'ESPA_CONFIG_PATH' in os.environ:
         config_path = os.path.join(os.environ.get('ESPA_CONFIG_PATH'), filename)
-        print "looking for config:", config_path
         if os.path.isfile(config_path):
             return config_path
 
@@ -24,12 +23,10 @@ def get_cfg_file_path(filename):
     # configuration
     if 'HOME' in os.environ:
         config_path = os.path.join(os.environ.get('HOME'), '.usgs', 'espa', filename)
-        print "looking for config:", config_path
         if os.path.isfile(config_path):
             return config_path
 
     config_path = os.path.join(os.path.join(os.getcwd(), filename))
-    print "looking for config:", config_path
     if os.path.isfile(config_path):
         return config_path
 
