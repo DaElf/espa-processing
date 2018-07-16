@@ -33,7 +33,7 @@ fi
 
 my_dist=$(cd ../../$repo; git describe --long --tags | awk -F'-g' '{print "g"$2}')
 rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/$repo.spec
-sudo mock --old-chroot  \
+sudo mock --old-chroot --verbose \
      --configdir=$(pwd)/../mock_config \
      --define "dist $my_dist" \
      -r my-epel-7-x86_64 \
