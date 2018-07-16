@@ -22,7 +22,7 @@ def parse_command_line():
     """Parse the command line
 
     Override def parse_command_line() from cli.py
-    to add a --batch switch.
+    to add job submission arguments.
 
     Returns:
         <parser>: Command line parser
@@ -30,23 +30,24 @@ def parse_command_line():
 
     parser = cli.build_command_line_parser()
 
-    parser.add_argument('--batch',
+    submit = parser.add_argument_group('job submission specifics')
+    submit.add_argument('--batch',
                           action='store_true',
                           dest='batch_mode',
                           default=False,
                           help='Queue job for batch processing')
-    parser.add_argument('--queue',
+    submit.add_argument('--queue',
                           action='store',
                           type=str,
                           dest='job_queue',
                           default=None,
                           help='Queue to submit job')
-    parser.add_argument('--batch-command',
+    submit.add_argument('--batch-command',
                           action='store',
                           type=str,
                           dest='batch_cmd',
                           default=None,
-                          help='Command to run in batch container')
+                          help='Command to run in batch container (developer convenience)')
 
     return parser.parse_args()
 
@@ -86,9 +87,9 @@ def submit_batch_job(args, order):
         order <dict>: Dictionary with the job parameters
     """
 
-    job_definition = 'ESPA_ProcessJob'  # JDC Debug
+    job_definition = 'espa-process-batch-ESPA_ProcessJob'  # JDC Debug
     job_bucket = 'jdc-test-dev'  # JDC debug
-    queue_name = 'ESPA_ProcessJobQueueNOT'  # JDC Debug
+    queue_name = 'espa-process-batch-ESPA_ProcessJobQueue'  # JDC Debug
 
     if args.job_queue is not None:
         queue_name = args.job_queue
@@ -99,18 +100,15 @@ def submit_batch_job(args, order):
                 "       Must use --queue or set BatchQueue\n")
         sys.exit(1)
 
-
     if 'espaJobBucket' in os.environ:
         job_bucket = os.environ['espaJobBucket']
     if 'JobDefinition' in os.environ:
         job_definition = os.environ['JobDefinition']
 
-    try:
-        aws_region = os.environ['AWSRegion']
-    except KeyError:
-        s3 = boto3.resource('s3')
+    if 'AWSRegion' in os.environ:
+        s3 = boto3.resource('s3', region_name=os.environ['AWSRegion'])
     else:
-        s3 = boto3.resource('s3', region_name=aws_region)
+        s3 = boto3.resource('s3')
 
     order_id = order['orderid']
     s3_key = order_id + '/' + order_id + '.json'
@@ -121,23 +119,21 @@ def submit_batch_job(args, order):
     s3obj.put(Body = order_str)
 
     client = boto3.client('batch')
+
     # JDC Debug
 #   print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
-    if 'batch_cmd' in order:
-        client.submit_job(
-                jobName = order['orderid'],
-                jobQueue = queue_name,
-                jobDefinition = job_definition,
-                parameters = {'order_url': s3_url},
-                containerOverrides = {
-                    'command': [order['batch_cmd'], 'Ref::order_url']
-                })
+    if args.batch_cmd is not None:
+        batch_cmd = args.batch_cmd
     else:
-        client.submit_job(
-                jobName = order['orderid'],
-                jobQueue = queue_name,
-                jobDefinition = job_definition,
-                parameters = {'order_url': s3_url})
+        batch_cmd = 'espa-worker.sh'
+    client.submit_job(
+            jobName = order['orderid'],
+            jobQueue = queue_name,
+            jobDefinition = job_definition,
+            parameters = {'order_url': s3_url},
+            containerOverrides = {
+                'command': [batch_cmd, 'Ref::order_url']
+            })
 
     # JDC Debug
     print("Submitted job {} to queue {}".format(order['orderid'], queue_name))
