@@ -1,8 +1,8 @@
 #!/bin/sh -x
 
 sudo chmod 777 /jobtmp
-my_dir="/jobtmp/$HOSTNAME"
-cd $my_dir
+my_dir=$(mktemp -p /jobtmp -d -t espa-worker.XXXXXX) || exit 1
+chown espa $my_dir
 
 sudo -E -u espa -s <<EOF
 set -x
