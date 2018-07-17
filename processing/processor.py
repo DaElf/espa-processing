@@ -1041,12 +1041,12 @@ class LandsatProcessor(CDRProcessor):
             try:
                 output = check_output(cmd)
             except IOError as e:
-                logger.error("surface_temperature.py I/O error on '%s': %s"
+                self._logger.error("surface_temperature I/O error '%s': %s"
                                  % (e.filename, e.strerror))
             except CalledProcessError as e:
-                logger.error("surface_temperature.py failed: %s" % (str(e)))
+                self._logger.error("surface_temperature failed: %s" % (str(e)))
             except OSError as e:
-                logger.error("surface_temperature.py failed: %s" % (str(e)))
+                self._logger.error("surface_temperature failed: %s" % (str(e)))
             finally:
                 if len(output) > 0:
                     self._logger.info(output)
