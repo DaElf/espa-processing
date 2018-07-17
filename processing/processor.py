@@ -18,6 +18,7 @@ import subprocess
 import json
 from cStringIO import StringIO
 from collections import defaultdict, namedtuple
+from subprocess import check_output, CalledProcessError, check_call
 
 
 from espa import Metadata
@@ -1029,25 +1030,23 @@ class LandsatProcessor(CDRProcessor):
 
         cmd = None
         if options['include_st']:
-
             cmd = ['surface_temperature.py',
-                   '--xml', self._xml_filename,
-                   '--keep-intermediate-data']
-
-            cmd = ' '.join(cmd)
+                    '--xml', self._xml_filename,
+                    '--keep-intermediate-data']
 
         # Only if required
         if cmd is not None:
-
-            self._logger.info(' '.join(['ST COMMAND:', cmd]))
-
+            self._logger.info(' '.join(['ST COMMAND:', ' '.join(cmd)]))
             output = ''
             try:
-                output = utilities.execute_cmd(cmd)
-            except:
-                if len(output) > 0:
-                    self._logger.error(output)
-                self._logger.error(sys.exc_info()[0])
+                output = check_output(cmd)
+            except IOError as e:
+                logger.error("surface_temperature.py I/O error on '%s': %s"
+                                 % (e.filename, e.strerror))
+            except CalledProcessError as e:
+                logger.error("surface_temperature.py failed: %s" % (str(e)))
+            except OSError as e:
+                logger.error("surface_temperature.py failed: %s" % (str(e)))
             finally:
                 if len(output) > 0:
                     self._logger.info(output)
