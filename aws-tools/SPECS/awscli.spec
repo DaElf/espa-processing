@@ -11,7 +11,7 @@
 %endif
 
 Name:           awscli
-Version:        1.14.8
+Version:        1.15.59
 Release:        1%{?dist}%{?_trivial}%{?_buildid}
 Summary:        Universal Command Line Environment for AWS
 
@@ -29,7 +29,7 @@ Requires:       python3-rsa
 %else
 BuildRequires:  python2-devel
 BuildRequires:  python-setuptools
-Requires:       python2-botocore = 1.8.12
+Requires:       python2-botocore >= 1.8.0
 Requires:       python-colorama
 Requires:       python-docutils
 Requires:       python-rsa
