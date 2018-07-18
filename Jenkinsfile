@@ -26,7 +26,6 @@ def buildIt(String name) {
 	      dir(name) {
 		      sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
 		      sh "sudo my_dist=Test0 mock --configdir=${WORKSPACE}/mock_config -r my-epel-7-x86_64 \
-                        --old-chroot \
                         --rootdir=${pwd()}/root \
                         --define \"dist $my_dist\" -r my-epel-7-x86_64 --resultdir ${pwd()}/mock_result SRPMS/*.src.rpm"
 	      }
