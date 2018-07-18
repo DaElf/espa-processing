@@ -13,7 +13,7 @@
 %global pypi_name s3transfer
 
 Name:           python-%{pypi_name}
-Version:        0.1.12
+Version:        0.1.13
 Release:        1%{?dist}%{?_trivial}%{?_buildid}
 Summary:        An Amazon S3 Transfer Manager
 
