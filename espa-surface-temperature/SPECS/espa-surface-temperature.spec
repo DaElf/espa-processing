@@ -9,6 +9,7 @@ URL:            https://github.com/USGS-EROS/espa-surface-temperature
 Source0:        espa-surface-temperature.tar.gz
 Patch0:         fix_InvGeoTransform.patch
 Patch1:         common_cfg.patch
+Patch2:		Import-metadat_api-from-a-specfic-package.patch
 
 BuildRequires: libxml2-devel
 BuildRequires: pkgconfig
@@ -29,6 +30,7 @@ ESPA surface temperature
 %setup -q -n espa-surface-temperature
 %patch0 -p1 -b .InvGeoTranmsform
 %patch1 -p1 -b .common_cfg
+%patch2 -p1 -b .Import-metadat_api-from-a-specfic-package.patch
 
 %build
 export PREFIX=%{_prefix}

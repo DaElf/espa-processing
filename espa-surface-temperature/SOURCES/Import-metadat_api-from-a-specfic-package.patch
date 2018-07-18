@@ -1,0 +1,27 @@
+From 121ecd87795eae5a7381d6b6969e4b42779a8059 Mon Sep 17 00:00:00 2001
+From: Russell Cattelan <cattelan@digitalelves.com>
+Date: Tue, 17 Jul 2018 17:49:40 +0000
+Subject: [PATCH] Import metadat_api from a specfic package
+
+---
+ provisional-st/scripts/build_st_data.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/provisional-st/scripts/build_st_data.py b/provisional-st/scripts/build_st_data.py
+index 5a4638d..5c6caef 100644
+--- a/provisional-st/scripts/build_st_data.py
++++ b/provisional-st/scripts/build_st_data.py
+@@ -39,9 +39,9 @@ import numpy as np
+ 
+ 
+ # Import the metadata api found in the espa-product-formatter project
++sys.path.append('/usr/espa-product-formatter/python')
+ import metadata_api
+ 
+-
+ # Import local modules
+ import st_utilities as util
+ 
+-- 
+2.14.4
+
