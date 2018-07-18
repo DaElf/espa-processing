@@ -7,7 +7,7 @@
 %global pypi_name boto3
 
 Name:           python-%{pypi_name}
-Version:        1.4.4
+Version:        1.7.58
 Release:        1%{?dist}
 Summary:        The AWS SDK for Python
 
@@ -30,11 +30,11 @@ BuildRequires:  python-setuptools
 BuildRequires:  python-nose
 BuildRequires:  python-mock
 BuildRequires:  python-wheel
-BuildRequires:  python2-botocore
+BuildRequires:  python2-botocore >= 1.8.0
 BuildRequires:  python2-jmespath
 BuildRequires:  python-futures
-BuildRequires:  python2-s3transfer
-Requires:       python2-botocore >= 1.5.0
+BuildRequires:  python2-s3transfer >= 0.1.10
+Requires:       python2-botocore >= 1.8.0
 Requires:       python2-jmespath >= 0.7.1
 Requires:       python2-s3transfer >= 0.1.10
 RequireS:       python-futures >= 2.2.0
@@ -56,10 +56,10 @@ BuildRequires:  python3-setuptools
 BuildRequires:  python3-nose
 BuildRequires:  python3-mock
 BuildRequires:  python3-wheel
-BuildRequires:  python3-botocore
+BuildRequires:  python3-botocore >= 1.8.0
 BuildRequires:  python3-jmespath
-BuildRequires:  python3-s3transfer
-Requires:       python3-botocore >= 1.5.0
+BuildRequires:  python3-s3transfer >= 0.1.10
+Requires:       python3-botocore >= 1.8.0
 Requires:       python3-jmespath >= 0.7.1
 Requires:       python3-s3transfer >= 0.1.10
 %{?python_provide:%python_provide python3-%{pypi_name}}
