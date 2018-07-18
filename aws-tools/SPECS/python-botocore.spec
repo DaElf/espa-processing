@@ -17,7 +17,7 @@
 %global pypi_name botocore
 
 Name:           python-%{pypi_name}
-Version:        1.8.12
+Version:        1.10.58
 Release:        1%{?dist}%{?_trivial}%{?_buildid}
 Summary:        Low-level, data-driven core of boto 3
 
@@ -107,7 +107,7 @@ Summary:        Documentation for %{name}
 %prep
 %setup -q -n %{pypi_name}-%{version}
 %if %{with fix_dateutil}
-%patch0 -p1
+#%patch0 -p1
 %endif # with fix_dateutil
 sed -i -e '1 d' botocore/vendored/requests/packages/chardet/chardetect.py
 sed -i -e '1 d' botocore/vendored/requests/certs.py
