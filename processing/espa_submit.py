@@ -81,7 +81,8 @@ def submit_batch_job(args, order):
     Create a directory with the order ID in the job bucket.  Put
     a file with the JSON-encoded order in the directory.  Submit
     a job to the queue with a parameter specifying the location
-    of the order file.
+    of the order file.  The JSON-encoded order and the
+    processing.conf file are copied to the job bucket.
 
     Args:
         order <dict>: Dictionary with the job parameters
@@ -110,6 +111,8 @@ def submit_batch_job(args, order):
     else:
         s3 = boto3.resource('s3')
 
+    proc_cfg_file = config.get_cfg_file_path(cli.PROC_CFG_FILENAME)
+
     order_id = order['orderid']
     s3_key = order_id + '/' + order_id + '.json'
     s3_url = 's3://' + job_bucket + '/' + s3_key
@@ -117,6 +120,9 @@ def submit_batch_job(args, order):
     s3obj = s3.Object(job_bucket, s3_key)
     order_str = json.dumps(order)
     s3obj.put(Body = order_str)
+    s3_key = order_id + '/' + proc_cfg_file.split('/')[-1]
+    s3obj = s3.Object(job_bucket, s3_key)
+    s3obj.put(proc_cfg_file)
 
     client = boto3.client('batch')
 
