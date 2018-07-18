@@ -38,8 +38,8 @@ def distribute_sum_directory(path='.', product_name='sum'):
     try:
         check_output(['gpg', '--yes', '--sign', '--armor', sum_file])
     except IOError as e:
-        logger.error("I/O error on '%s': %s" % (e.filename, e.strerror))
+        logger.warn("I/O error on '%s': %s" % (e.filename, e.strerror))
     except CalledProcessError as e:
-        logger.error("gpg failed: %s" % (str(e)))
+        logger.warn("gpg failed: %s" % (str(e)))
     except OSError as e:
-        logger.error("failed to run 'gpg': %s" % (str(e)))
+        logger.warn("failed to run 'gpg': %s" % (str(e)))
