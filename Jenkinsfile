@@ -4,9 +4,6 @@ properties(
       [string(defaultValue: 'master'
               , name: 'build_branch'
               , description: 'Build this branch if it exists'),
-       string(defaultValue: 'master'
-              , name: 'master_branch'
-              , description: 'Fallback branch to build'),
        string(defaultValue: '9000.1.0'
               , name: 'force_rpm_version'
               , description: 'Version to force built rpms to be, its over 9000.'),
@@ -21,7 +18,7 @@ def buildIt(String name) {
     try {
     stage(name) {
       node("mock-build") {
-	      env.my_dist = 'Test0'
+	      env.my_dist = "${force_rpm_version}"
 	      git branch: "JenkinsBuild", credentialsId: 'rcattelan-code-usgs-gov', url: 'https://code.usgs.gov/eros-lsds/espa-rpmbuild.git'
 	      dir(name) {
 		      sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
