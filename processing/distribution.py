@@ -72,7 +72,8 @@ def package_product(immutability, source_directory, destination_directory,
                 logger.info(output)
 
     # Remove the file first just in-case this is a second run
-    cmd = ' '.join(['rm', '-f', filename])
+    #cmd = ' '.join(['rm', '-f', filename])
+    cmd = ' '.join(['ls', '-l', filename])
     output = ''
     try:
         output = utilities.execute_cmd(cmd)
