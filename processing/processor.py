@@ -1259,17 +1259,39 @@ class LandsatProcessor(CDRProcessor):
             # Get the current time information
             ts = datetime.datetime.today()
 
-            # Extract stuff from the product information
-            product_prefix = sensor.info(product_id).product_prefix
+            (sensor_code, proclevel,
+                 path_row, date_acq, proc_date,
+            collection, tier) = product_id.split('_')
 
-            product_name = ('{0}-SC_{1}{2}{3}_{4}{5}{6}'
-                            .format(product_prefix,
-                                    str(ts.year).zfill(4),
-                                    str(ts.month).zfill(2),
-                                    str(ts.day).zfill(2),
-                                    str(ts.hour).zfill(2),
-                                    str(ts.minute).zfill(2),
-                                    str(ts.second).zfill(2)))
+            adate = datetime.datetime.strptime(date_acq, '%Y%m%d').date()
+
+            orbitpath = path_row[0:3]
+            orbitrow = path_row[3:]
+
+            # Sensor string is used in plotting
+            sensor_name = None
+            if sensor.is_landsat4(product_id):
+                sensor_name = 'L4'
+            elif sensor.is_landsat5(product_id):
+                sensor_name = 'L5'
+            elif sensor.is_landsat7(product_id):
+                sensor_name = 'L7'
+            elif sensor.is_landsat8(product_id):
+                sensor_name = 'L8'
+
+            product_name = ('{sensor}_{proclevel}_{orbitpath}_{orbitrow}_{ayear}{amonth}{aday}_{pyear}{pmonth}{pday}_{collection}_{tier}'
+                            .format(sensor=sensor_name,
+                                    proclevel=proclevel,
+                                    orbitpath=orbitpath,
+                                    orbitrow=orbitrow,
+                                    ayear=str(adate.year).zfill(4),
+                                    amonth=str(adate.month).zfill(2),
+                                    aday=str(adate.day).zfill(2),
+                                    pyear=str(ts.year).zfill(4),
+                                    pmonth=str(ts.month).zfill(2),
+                                    pday=str(ts.day).zfill(2),
+                                    collection=collection.zfill(2),
+                                    tier=tier))
 
             self._product_name = product_name
 
@@ -1549,17 +1571,39 @@ class ModisProcessor(CDRProcessor):
             # Get the current time information
             ts = datetime.datetime.today()
 
-            # Extract stuff from the product information
-            product_prefix = sensor.info(product_id).product_prefix
+            (sensor_code, proclevel,
+                 path_row, date_acq, proc_date,
+            collection, tier) = product_id.split('_')
 
-            product_name = ('{0}-SC{1}{2}{3}{4}{5}{6}'
-                            .format(product_prefix,
-                                    str(ts.year).zfill(4),
-                                    str(ts.month).zfill(2),
-                                    str(ts.day).zfill(2),
-                                    str(ts.hour).zfill(2),
-                                    str(ts.minute).zfill(2),
-                                    str(ts.second).zfill(2)))
+            adate = datetime.datetime.strptime(date_acq, '%Y%m%d').date()
+
+            orbitpath = path_row[0:3]
+            orbitrow = path_row[3:]
+
+            if sensor.is_landsat4(product_id):
+                sensor_name = 'L4'
+            elif sensor.is_landsat5(product_id):
+                sensor_name = 'L5'
+            elif sensor.is_landsat7(product_id):
+                sensor_name = 'L7'
+            elif sensor.is_landsat8(product_id):
+                sensor_name = 'L8'
+            else:
+                sensor_name = None
+
+            product_name = ('{sensor}_{proclevel}_{orbitpath}_{orbitrow}_{ayear}{amonth}{aday}_{pyear}{pmonth}{pday}_{collection}_{tier}'
+                        .format(sensor=sensor_name,
+                                    proclevel=proclevel,
+                                    orbitpath=orbitpath,
+                                    orbitrow=orbitrow,
+                                    ayear=str(adate.year).zfill(4),
+                                    amonth=str(adate.month).zfill(2),
+                                    aday=str(adate.day).zfill(2),
+                                    pyear=str(ts.year).zfill(4),
+                                    pmonth=str(ts.month).zfill(2),
+                                    pday=str(ts.day).zfill(2),
+                                    collection=collection.zfill(2),
+                                    tier=tier))
 
             self._product_name = product_name
 
