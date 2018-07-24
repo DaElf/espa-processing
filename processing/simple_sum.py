@@ -34,11 +34,15 @@ def distribute_sum_directory(path='.', product_name='sum'):
         logger.error("failed to run 'sha256sum': %s" % (str(e)))
         raise
 
+    output = ''
     try:
-        check_output(['gpg', '--yes', '--sign', '--armor', sum_file])
+        output = check_output(['gpg', '--yes', '--sign', '--armor', sum_file])
     except IOError as e:
         logger.warn("I/O error on '%s': %s" % (e.filename, e.strerror))
     except CalledProcessError as e:
         logger.warn("gpg failed: %s" % (str(e)))
     except OSError as e:
         logger.warn("failed to run 'gpg': %s" % (str(e)))
+    finally:
+        if len(output) > 0:
+            self._logger.info(output)
