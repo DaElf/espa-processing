@@ -776,7 +776,6 @@ class LandsatProcessor(CDRProcessor):
 
 
         cmd = ['aws', 's3', 'sync', download_url, self._stage_dir]
-        print cmd
         try:
             logger.info("Running: aws s3 sync")
             check_output(cmd)
@@ -796,7 +795,6 @@ class LandsatProcessor(CDRProcessor):
                     cmd = ['gdal_translate', '-of', 'GTiff',
                                os.path.join(self._stage_dir, name),
                                os.path.join(self._work_dir, name)]
-                    print cmd
                     try:
                         logger.info("Running: gdal_translate")
                         check_output(cmd)
@@ -810,7 +808,6 @@ class LandsatProcessor(CDRProcessor):
                     if name.endswith((".txt")):
                         cmd = ['rsync', '-av', os.path.join(self._stage_dir, name),
                             self._work_dir + '/']
-                        print cmd
                         check_output(cmd)
         except OSError as e:
             logger.error("rsync: %s" % (str(e)))
@@ -1249,6 +1246,7 @@ class LandsatProcessor(CDRProcessor):
         finally:
             if len(output) > 0:
                 self._logger.info(output)
+
 
     def get_product_name(self):
         """Build the product name from the product information and current

@@ -575,33 +575,31 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
         logger.error('S3 PUT failed {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
 #        raise excep
 
-    my_tag = { 'TagSet' : [
-        {
-            'Key': 'product',
-            'Value': 'level2'
-        },
-        {
-            'Key': 'round',
-            'Value': 'square'
-        },
-        {
-            'Key': 'dirt',
-            'Value': 'clean'
-        },
-        ]
-        }
+        my_tag = { 'TagSet' : [
+            {
+                'Key': 'product',
+                'Value': 'level2'
+            },
+            {
+                'Key': 'round',
+                'Value': 'square'
+            },
+            {
+                'Key': 'dirt',
+                'Value': 'clean'
+            },
+            ]
+            }
         
     try:
         client = boto3.client('s3')
         pull_tags = client.get_object_tagging(
             Bucket=bucket_name,
             Key=key)
-        print "pull_tags", pull_tags
     except Exception as excep:
         logger.error(excep)
         logger.error('Error get tagging object {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
     try:
-        print my_tag
         response = client.put_object_tagging(
             Bucket=bucket_name,
             Key=key,
@@ -609,7 +607,6 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
             )
         logger.info("S3 TagSet completed: " + key, response)
     except Exception as excep:
-        #print response
         logger.error(excep)
         logger.error('Error put tagging object {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
 #        raise excep
