@@ -1215,19 +1215,8 @@ class LandsatProcessor(CDRProcessor):
             orbitpath = path_row[0:3]
             orbitrow = path_row[3:]
 
-            # Sensor string is used in plotting
-            sensor_name = None
-            if sensor.is_landsat4(product_id):
-                sensor_name = 'L4'
-            elif sensor.is_landsat5(product_id):
-                sensor_name = 'L5'
-            elif sensor.is_landsat7(product_id):
-                sensor_name = 'L7'
-            elif sensor.is_landsat8(product_id):
-                sensor_name = 'L8'
-
-            product_name = ('{sensor}_{proclevel}_{orbitpath}_{orbitrow}_{ayear}{amonth}{aday}_{pyear}{pmonth}{pday}_{collection}_{tier}'
-                            .format(sensor=sensor_name,
+            product_name = ('{sensor}_{proclevel}_{orbitpath}{orbitrow}_{ayear}{amonth}{aday}_{pyear}{pmonth}{pday}_{collection}_{tier}'
+                            .format(sensor=sensor_code,
                                     proclevel=proclevel,
                                     orbitpath=orbitpath,
                                     orbitrow=orbitrow,
@@ -1242,6 +1231,7 @@ class LandsatProcessor(CDRProcessor):
 
             self._product_name = product_name
 
+        self._logger.info("product_name: %s" % self._product_name);
         return self._product_name
 
 
@@ -1527,19 +1517,8 @@ class ModisProcessor(CDRProcessor):
             orbitpath = path_row[0:3]
             orbitrow = path_row[3:]
 
-            if sensor.is_landsat4(product_id):
-                sensor_name = 'L4'
-            elif sensor.is_landsat5(product_id):
-                sensor_name = 'L5'
-            elif sensor.is_landsat7(product_id):
-                sensor_name = 'L7'
-            elif sensor.is_landsat8(product_id):
-                sensor_name = 'L8'
-            else:
-                sensor_name = None
-
-            product_name = ('{sensor}_{proclevel}_{orbitpath}_{orbitrow}_{ayear}{amonth}{aday}_{pyear}{pmonth}{pday}_{collection}_{tier}'
-                        .format(sensor=sensor_name,
+            product_name = ('{sensor}_{proclevel}_{orbitpath}{orbitrow}_{ayear}{amonth}{aday}_{pyear}{pmonth}{pday}_{collection}_{tier}'
+                        .format(sensor=sensor_code,
                                     proclevel=proclevel,
                                     orbitpath=orbitpath,
                                     orbitrow=orbitrow,
@@ -1554,6 +1533,7 @@ class ModisProcessor(CDRProcessor):
 
             self._product_name = product_name
 
+        self._logger.info("product_name: %s" % self._product_name);
         return self._product_name
 
 
@@ -1980,6 +1960,7 @@ class PlotProcessor(ProductProcessor):
             self._product_name = '-'.join([self._parms['orderid'],
                                            'statistics'])
 
+        self._logger.info("product_name: %s" % self._product_name);
         return self._product_name
 
     def process_product(self):
