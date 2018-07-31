@@ -1076,8 +1076,9 @@ def main():
         if not args.bridge_mode:
             archive_log_files(proc_cfg, proc_status, args)
 
-        if order['dist_method'] is not None and order['dist_method'] == 's3':
-            archive_log_s3(order=order, base_log=cli_log_filename(args))
+# We are only using one log file now
+#        if order['dist_method'] is not None and order['dist_method'] == 's3':
+#            archive_log_s3(order=order, base_log=cli_log_filename(args))
 
         EspaLogging.shutdown()
 
