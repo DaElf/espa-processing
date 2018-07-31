@@ -555,6 +555,29 @@ def distribute_statistics_local(immutability, product_id, source_path,
         # Change back to the previous directory
         os.chdir(current_directory)
 
+def distribute_product_s3_bucket(source_path, cksum_full_path, product_name, parms):
+
+    logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
+
+    if  parms['options']['dist_s3_bucket'] is not None:
+        bucket_name = parms['options']['dist_s3_bucket']
+    else:
+        logger.error("Error dist_s3_bucket not defined")
+        return
+
+    try:
+        cmd = ['aws', 's3', 'sync', source_path, 's3://' + bucket_name + '/' + product_name]
+        logger.info("Push: %s", ' '.join(cmd))
+        output = check_output(cmd)
+    except IOError as e:
+            logger.error("I/O error on '%s': %s" % (e.filename, e.strerror))
+            raise
+    except CalledProcessError as e:
+            logger.error("aws s3 failed: %s" % (str(e)))
+            raise
+    except OSError as e:
+            logger.error("aws s3: %s" % (str(e)))
+            raise
 
 def distribute_product_s3(product_full_path, cksum_full_path, product_name, parms):
 

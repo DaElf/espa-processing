@@ -762,6 +762,58 @@ class LandsatProcessor(CDRProcessor):
         staging.untar_data(staged_file, self._work_dir)
         os.unlink(staged_file)
 
+    def stage_input_data(self):
+        """Stages the input data required for the processor
+        """
+
+        logger = self._logger
+        product_id = self._parms['product_id']
+        download_url = self._parms['download_url']
+
+        file_name = ''.join([product_id,
+                             settings.LANDSAT_INPUT_FILENAME_EXTENSION])
+        staged_file = os.path.join(self._stage_dir, file_name)
+
+
+        cmd = ['aws', 's3', 'sync', download_url, self._stage_dir]
+        try:
+            logger.info("Running: %s" % ' '.join(cmd))
+            check_output(cmd)
+        except IOError as e:
+            logger.error("I/O error on '%s': %s" % (e.filename, e.strerror))
+            raise
+        except CalledProcessError as e:
+            logger.error("aws s3 failed: %s" % (str(e)))
+            raise
+        except OSError as e:
+            logger.error("aws s3: %s" % (str(e)))
+            raise
+
+        for self._stage_dir, subdirs, files in os.walk(self._stage_dir):
+            for name in files:
+                if name.endswith((".tif",".TIF")):
+                    cmd = ['gdal_translate', '-of', 'GTiff',
+                               os.path.join(self._stage_dir, name),
+                               os.path.join(self._work_dir, name)]
+                    try:
+                        logger.info("Running: %s" % ' '.join(cmd))
+                        check_output(cmd)
+                    except OSError as e:
+                        logger.error("gdal_translate: %s" % (str(e)))
+                        raise
+
+        try:
+            for self._stage_dir, subdirs, files in os.walk(self._stage_dir):
+                for name in files:
+                    if name.endswith((".txt")):
+                        cmd = ['rsync', '-av', os.path.join(self._stage_dir, name),
+                            self._work_dir + '/']
+                        check_output(cmd)
+        except OSError as e:
+            logger.error("rsync: %s" % (str(e)))
+            raise
+
+
     def convert_to_raw_binary(self):
         """Converts the Landsat(LPGS) input data to our internal raw binary
            format
