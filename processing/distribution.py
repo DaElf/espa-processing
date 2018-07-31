@@ -72,7 +72,12 @@ def package_product(immutability, source_directory, destination_directory,
                 logger.info(output)
 
     # Remove the file first just in-case this is a second run
-    cmd = ' '.join(['rm', '-f', filename])
+#    cmd = ' '.join(['rm', '-f', filename])
+# With the new product_name the filename_parts are no longer valid
+# But this seems like a unnecessary things to do as the orignal
+# comment is "just in-case" -- RMC
+    cmd = ' '.join(['ls', '-l', filename])
+    logger.info("This might be rm %s", cmd)
     output = ''
     try:
         output = utilities.execute_cmd(cmd)
