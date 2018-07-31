@@ -31,51 +31,46 @@ def parse_command_line():
     parser = cli.build_command_line_parser()
 
     submit = parser.add_argument_group('job submission specifics')
-    submit.add_argument('--batch',
-                          action='store_true',
-                          dest='batch_mode',
-                          default=False,
-                          help='Queue job for batch processing')
-    submit.add_argument('--queue',
-                          action='store',
-                          type=str,
-                          dest='job_queue',
-                          default=None,
-                          help='Queue to submit job')
     submit.add_argument('--batch-command',
                           action='store',
                           type=str,
                           dest='batch_cmd',
                           default=None,
                           help='Command to run in batch container (developer convenience)')
+    submit.add_argument('--job-bucket',
+                          action='store',
+                          type=str,
+                          dest='job_bucket',
+                          default=None,
+                          help='S3 bucket to hold job information')
+    submit.add_argument('--job-definition',
+                          action='store',
+                          type=str,
+                          dest='job_definition',
+                          default=None,
+                          help='Job definition name for batch job')
+    submit.add_argument('--no-submit',
+                          action='store_true',
+                          dest='no_submit',
+                          default=False,
+                          help="Don't submit job, just print S3 URL of job order file (default: False)")
+    submit.add_argument('--s3-job-prefix',
+                          action='store',
+                          type=str,
+                          dest='s3_job_prefix',
+                          default=None,
+                          help='S3 job file prefix')
+    submit.add_argument('--queue',
+                          action='store',
+                          type=str,
+                          dest='job_queue',
+                          default=None,
+                          help='Queue to submit job')
 
     return parser.parse_args()
 
 
-def submit_SQS_job(args, order):
-
-    sqs_queue_name = None
-    if args.job_queue is not None:
-        sqs_queue_name = args.job_queue
-    elif 'SQSQueue' in os.environ:
-           sqs_queue_name = os.environ['SQSQueue']
-    else:
-        sys.stderr.write("Error: queue name not set\n" +
-                "       Must use --queue or set SQSQueue\n")
-        sys.exit(1)
-
-    if 'AWSRegion' in os.environ:
-        sqs = boto3.resource('sqs', region_name = os.environ['AWSRegion'])
-    else:
-        sqs = boto3.resource('sqs')
-
-    queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
-    response = queue.send_message(MessageBody=json.dumps(order),
-            MessageGroupId = 'ESPA',
-            MessageDeduplicationId = str(random.getrandbits(128)))
-
-
-def submit_batch_job(args, order):
+def submit_job(args, order):
     """Submit a job to the batch queue
 
     Create a directory with the order ID in the job bucket.  Put
@@ -88,23 +83,33 @@ def submit_batch_job(args, order):
         order <dict>: Dictionary with the job parameters
     """
 
-    job_definition = 'espa-process-batch-ESPA_ProcessJob'  # JDC Debug
-    job_bucket = 'jdc-test-dev'  # JDC debug
-    queue_name = 'espa-process-batch-ESPA_ProcessJobQueue'  # JDC Debug
+    if not args.no_submit:
+        if args.job_queue is not None:
+            queue_name = args.job_queue
+        elif 'espaQueue' in os.environ:
+            queue_name = os.environ['espaQueue']
+        else:
+            sys.stderr.write("Error: queue name not set\n" +
+                    "       Must use --queue or set espaQueue\n")
+            sys.exit(1)
 
-    if args.job_queue is not None:
-        queue_name = args.job_queue
-    elif 'BatchQueue' in os.environ:
-        queue_name = os.environ['BatchQueue']
+    if args.job_definition is not None:
+        job_definition = args.job_definition
+    elif 'espaJobDefinition' in os.environ:
+        job_definition = os.environ['espaJobDefinition']
     else:
-        sys.stderr.write("Error: queue name not set\n" +
-                "       Must use --queue or set BatchQueue\n")
+        sys.stderr.write("Error: job definition not set\n" +
+                "       Must use --job-definition or set espaJobDefinition\n")
         sys.exit(1)
 
-    if 'espaJobBucket' in os.environ:
+    if args.job_bucket is not None:
+        job_bucket = args.job_bucket
+    elif 'espaJobBucket' in os.environ:
         job_bucket = os.environ['espaJobBucket']
-    if 'JobDefinition' in os.environ:
-        job_definition = os.environ['JobDefinition']
+    else:
+        sys.stderr.write("Error: job bucket not set\n" +
+                "       Must use --job-bucket or set espaJobBucket\n")
+        sys.exit(1)
 
     if 'AWSRegion' in os.environ:
         s3 = boto3.resource('s3', region_name=os.environ['AWSRegion'])
@@ -112,19 +117,27 @@ def submit_batch_job(args, order):
         s3 = boto3.resource('s3')
 
     proc_cfg_file = config.get_cfg_file_path(cli.PROC_CFG_FILENAME)
+    if proc_cfg_file is None:
+        sys.stderr.write("Error: no processing.conf file\n")
+        sys.exit(1)
+    elif not os.path.isfile(proc_cfg_file):
+        sys.stderr.write("Error: can't find file {}\n".format(proc_cfg_file))
+        sys.exit(1)
 
     order_id = order['orderid']
-    s3_key = order_id + '/' + order_id + '.json'
+    if args.s3_job_prefix is not None:
+        s3_prefix = args.s3_job_prefix + '/' + order_id
+    else:
+        s3_prefix = order_id
+
+    s3_key = s3_prefix + '/' + order_id + '.json'
     s3_url = 's3://' + job_bucket + '/' + s3_key
 
-    s3obj = s3.Object(job_bucket, s3_key)
-    order_str = json.dumps(order)
-    s3obj.put(Body = order_str)
-    s3_key = order_id + '/' + proc_cfg_file.split('/')[-1]
-    s3obj = s3.Object(job_bucket, s3_key)
-    s3obj.put(proc_cfg_file)
+    s3_client = boto3.client('s3')
+    s3_client.put_object(Bucket=job_bucket, Body=json.dumps(order), Key=s3_key)
 
-    client = boto3.client('batch')
+    s3_key = s3_prefix + '/' + proc_cfg_file.split('/')[-1]
+    s3_client.upload_file(proc_cfg_file, job_bucket, s3_key)
 
     # JDC Debug
 #   print(json.dumps(order, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -132,17 +145,23 @@ def submit_batch_job(args, order):
         batch_cmd = args.batch_cmd
     else:
         batch_cmd = 'espa-worker.sh'
-    client.submit_job(
-            jobName = order['orderid'],
-            jobQueue = queue_name,
-            jobDefinition = job_definition,
-            parameters = {'order_url': s3_url},
-            containerOverrides = {
-                'command': [batch_cmd, 'Ref::order_url']
-            })
 
-    # JDC Debug
-    print("Submitted job {} to queue {}".format(order['orderid'], queue_name))
+    if args.no_submit:
+        print(s3_url)
+    else:
+        client = boto3.client('batch')
+        client.submit_job(
+                jobName = order['orderid'],
+                jobQueue = queue_name,
+                jobDefinition = job_definition,
+                parameters = {'order_url': s3_url},
+                containerOverrides = {
+                    'command': [batch_cmd, 'Ref::order_url']
+                })
+
+        # JDC Debug
+        print("Submitted job {} to queue {}".format(
+                order['orderid'], queue_name))
 
 
 def main():
@@ -154,7 +173,6 @@ def main():
     if args.order_id.lower() == 'random':
         args.order_id = ''.join(random.choice(string.ascii_lowercase) \
                 for _ in range(4)) + '-00001'
-    batch_mode = args.batch_mode
 
     proc_cfg = config.retrieve_cfg(cli.PROC_CFG_FILENAME)
 
@@ -176,10 +194,7 @@ def main():
             order['batch_cmd'] = args.batch_cmd
         order['proc_cfg'] = proc_cfg.items('processing')
 
-        if batch_mode:
-            submit_batch_job(args,order)
-        else:
-            submit_SQS_job(args,order)
+        submit_job(args,order)
 
     except Exception as e:
         sys.stderr.write('Error: {}\n'.format(e))

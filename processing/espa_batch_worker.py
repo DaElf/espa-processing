@@ -37,6 +37,35 @@ def parse_s3_url(url):
     return(u_list[2], string.join(u_list[3:], '/'))
 
 
+def parse_job_control_file(job_bucket, s3_key):
+
+    index = int(os.environ['AWS_BATCH_JOB_ARRAY_INDEX'])
+    fn = s3_key.split('/')[-1]
+
+    client = boto3.client('s3')
+    client.download_file(job_bucket, s3_key, fn)
+
+    try:
+        file = open(fn)
+    except Exception as e:
+        sys.stderr.write("Error: can't open job control file {}\n".format(e))
+        sys.exit(1)
+
+    i = 0
+    while i <= index:
+        s3_url = file.readline().strip()
+        i += 1
+        if s3_url == '':
+            # We hit EOF
+            sys.stderr.write("Error: EOF in job control file " + \
+                    "before index {}\n".format(index))
+            sys.exit(1)
+
+    file.close()
+
+    return parse_s3_url(s3_url)
+
+
 def main():
     """Read a JSON file with details about an order from
        an S3 bucket and process the order
@@ -54,10 +83,8 @@ def main():
         sys.stderr.write('Error: invalid URL {}\n'.format(sys.argv[1]))
         sys.exit(1)
 
-    if 'AWSRegion' in os.environ:
-        s3 = boto3.resource('s3', region_name = os.environ['AWSRegion'])
-    else:
-        s3 = boto3.resource('s3')
+    if 'AWS_BATCH_JOB_ARRAY_INDEX' in os.environ:
+        (job_bucket, s3_key) = parse_job_control_file(job_bucket, s3_key)
 
     s3 = boto3.resource('s3').Bucket(job_bucket)
     try:

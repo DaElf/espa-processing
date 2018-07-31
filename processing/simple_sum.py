@@ -19,8 +19,7 @@ def distribute_sum_directory(path='.', product_name='sum'):
 
     sum_file = product_name + '.sha256'
     try:
-    # sha 256 sum all the files
-        print("Including sha56 sum off all files")
+        # sha 256 sum all the files
         cmd = ["sha256sum"] + sum_list
         logger.info("Running: sha256sum")
         fout=open(sum_file, 'w')
