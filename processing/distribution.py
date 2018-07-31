@@ -596,12 +596,10 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
         pull_tags = client.get_object_tagging(
             Bucket=bucket_name,
             Key=key)
-        print "pull_tags", pull_tags
     except Exception as excep:
         logger.error(excep)
         logger.error('Error get tagging object {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
     try:
-        print my_tag
         response = client.put_object_tagging(
             Bucket=bucket_name,
             Key=key,
