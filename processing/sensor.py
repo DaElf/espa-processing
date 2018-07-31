@@ -110,8 +110,12 @@ def landsat_sensor_info(product_id):
 
     # Determine the product prefix
     product_prefix = ('{0}_{1:>03}_{2:>03}_{3:>08}_{4:>02}_{5:>02}'
-                      .format(sensor_code, path, row, date_acq,
-                              collection_id, tier))
+                        .format(sensor_code,
+                                    path,
+                                    row,
+                                    date_acq,
+                                    collection_id,
+                                    tier))
 
     # Determine the default pixel sizes
     meters = DEFAULT_PIXEL_SIZE['meters'][sensor_code]
