@@ -744,7 +744,7 @@ class LandsatProcessor(CDRProcessor):
                     'include_dswe'
             ])
 
-    def stage_input_data(self):
+    def stage_input_data_NOT(self):
         """Stages the input data required for the processor
         """
 

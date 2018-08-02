@@ -77,7 +77,7 @@ def get_filename(work_dir, product_id):
     os.chdir(work_dir)
 
     try:
-        for meta_file in glob.glob('{0}_MTL.*'.format(product_id)):
+        for meta_file in glob.glob('{0}_MTL.txt'.format(product_id)):
             if ('old' not in meta_file and
                     not meta_file.startswith('lnd')):
 

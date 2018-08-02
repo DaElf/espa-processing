@@ -635,7 +635,6 @@ def distribute_product_s3(product_full_path, cksum_full_path, product_name, parm
             )
         logger.info("S3 TagSet completed: " + key, response)
     except Exception as excep:
-        #print response
         logger.error(excep)
         logger.error('Error put tagging object {0} from bucket {1}. Verify that they exist'.format(key, s3_bucket))
 #        raise excep
@@ -690,7 +689,8 @@ def distribute_product_remote(immutability, product_name, source_path,
             sub_attempt = 0
             while True:
                 try:
-                    distribute_product_s3(product_full_path, cksum_full_path, product_name, parms)
+#                    distribute_product_s3(product_full_path, cksum_full_path, product_name, parms)
+                    distribute_product_s3_bucket(source_path, cksum_full_path, product_name, parms)
 
                 except Exception:
                     logger.exception("An exception occurred processing %s"
