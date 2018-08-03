@@ -670,9 +670,6 @@ def distribute_product_remote(immutability, product_name, source_path,
                         raise
                 break
 
-            # Always log where we placed the files
-            product_file = os.path.basename(product_full_path)
-            cksum_file = os.path.basename(cksum_full_path)
         except Exception:
             if attempt < max_number_of_attempts:
                 sleep(sleep_seconds)  # sleep before trying again
@@ -684,6 +681,9 @@ def distribute_product_remote(immutability, product_name, source_path,
                 raise
         break
 
+    # Always log where we placed the files
+    product_file = os.path.basename(product_full_path)
+    cksum_file = os.path.basename(cksum_full_path)
     return (product_file, cksum_file)
 
 
