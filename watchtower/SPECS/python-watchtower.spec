@@ -13,6 +13,7 @@ Source0:        watchtower.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  python-devel
+BuildRequires:  python2-setuptools
 
 %description
 Watchtower is a log handler for Amazon Web Services CloudWatch Logs.
