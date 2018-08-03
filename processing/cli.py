@@ -1006,7 +1006,7 @@ def main():
 
     # Configure the base logger for this request
     EspaLogging.configure_base_logger(filename=cli_log_filename(args),
-                                          level=logging.INFO)
+                                          level=logging.DEBUG)
 
     # CLI will use the base logger
     logger = EspaLogging.get_logger('base')

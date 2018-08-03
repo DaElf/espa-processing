@@ -48,7 +48,7 @@ def cli_log_setup(order):
 
     # Configure the base logger for this request
     EspaLogging.configure_base_logger(filename=cli_log_filename(order),
-                                          level=logging.INFO)
+                                          level=logging.DEBUG)
     logger = EspaLogging.get_logger('base')
     logger.addHandler(watchtower.CloudWatchLogHandler(log_group="espa-process",
                                                       create_log_group=False,
