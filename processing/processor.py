@@ -744,7 +744,16 @@ class LandsatProcessor(CDRProcessor):
                     'include_dswe'
             ])
 
-    def stage_input_data_NOT(self):
+
+    def stage_input_data(self):
+
+        download_url = self._parms['download_url']
+        if download_url.endswith('.tar.gz') or download_url.endswith('.tgz'):
+            self.stage_input_data_tarball()
+        else:
+            self.stage_input_data_s3_bucket()
+
+    def stage_input_data_tarball(self):
         """Stages the input data required for the processor
         """
 
@@ -762,7 +771,7 @@ class LandsatProcessor(CDRProcessor):
         staging.untar_data(staged_file, self._work_dir)
         os.unlink(staged_file)
 
-    def stage_input_data(self):
+    def stage_input_data_s3_bucket(self):
         """Stages the input data required for the processor
         """
 
