@@ -13,6 +13,8 @@ import random
 import resource
 from collections import defaultdict
 from subprocess import check_output, CalledProcessError, check_call
+import settings
+from logging_tools import EspaLogging
 
 
 def date_from_year_doy(year, doy):
@@ -72,40 +74,28 @@ def current_disk_usage(pathname):
 
 
 def execute_cmd(cmd):
-    """Execute a system command line
 
-    Args:
-        cmd (str): The command line to execute.
-
-    Returns:
-        output (str): The stdout and/or stderr from the executed command.
-
-    Raises:
-        Exception(message)
-    """
-
+    logger = EspaLogging.get_logger(settings.PROCESSING_LOGGER)
     output = ''
-    (status, output) = commands.getstatusoutput(cmd)
 
-    message = ''
-    if status < 0:
-        message = 'Application terminated by signal [{}]'.format(cmd)
-
-    if status != 0:
-        message = 'Application failed to execute [{}]'.format(cmd)
-
-    if os.WEXITSTATUS(status) != 0:
-        message = ('Application [{}] returned error code [{}]'
-                   .format(cmd, os.WEXITSTATUS(status)))
-
-    if len(message) > 0:
-        if len(output) > 0:
-            # Add the output to the exception message
-            message = ' Stdout/Stderr is: '.join([message, output])
-        raise Exception(message)
+    if cmd is not None:
+        logger.info(' '.join(['ST COMMAND:', cmd]))
+        try:
+            output = check_output(cmd, shell=True)
+        except IOError as e:
+            logger.error("I/O error '%s': %s" % (e.filename, e.strerror))
+            raise
+        except CalledProcessError as e:
+            logger.error("cmd %s failed: %s" % (cmd[0], str(e)))
+            raise
+        except OSError as e:
+            logger.error("cmd %s failed: %s" % (cmd[0], str(e)))
+            raise
+        finally:
+            if len(output) > 0:
+                logger.info(output)
 
     return output
-
 
 def get_cache_hostname(host_names):
     """Poor mans load balancer for accessing the online cache over the private
