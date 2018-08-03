@@ -48,5 +48,6 @@ par_tasks["espa-reprojection"] = buildIt("espa-reprojection")
 par_tasks["espa-plotting"] = buildIt("espa-plotting")
 par_tasks["espa-processing"] = buildIt("espa-processing")
 par_tasks["espa-cloud-masking"]  = buildIt("espa-cloud-masking")
+par_tasks["watchtower"]  = buildIt("watchtower")
 
 parallel par_tasks
