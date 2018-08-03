@@ -107,12 +107,12 @@ def package_product(immutability, source_directory, destination_directory,
 
         cksum_full_path = os.path.join(destination_directory, cksum_filename)
 
-        try:
-            with open(cksum_full_path, 'wb+') as cksum_fd:
-                cksum_fd.write(cksum_value)
-        except Exception:
-            logger.exception('Error building checksum file')
-            raise
+#        try:
+#            with open(cksum_full_path, 'wb+') as cksum_fd:
+#                cksum_fd.write(cksum_value)
+#        except Exception:
+#            logger.exception('Error building checksum file')
+#            raise
 
     finally:
         # Change back to the previous directory
