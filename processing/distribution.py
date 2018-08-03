@@ -84,6 +84,7 @@ def package_product(immutability, source_directory, destination_directory,
 #                logger.info(output)
 
         # If it was good create a checksum file
+        cksum_filename = ''
         cksum_output = ''
         cmd = ' '.join([settings.ESPA_CHECKSUM_TOOL, product_full_path])
         try:
@@ -95,8 +96,8 @@ def package_product(immutability, source_directory, destination_directory,
         # Get the base filename of the file that was checksum'd
         cksum_prod_filename = os.path.basename(product_full_path)
 
-        logger.debug("Checksum file = %s" % cksum_filename)
-        logger.debug("Checksum'd file = %s" % cksum_prod_filename)
+        logger.info("Checksum file = %s" % cksum_filename)
+        logger.info("Checksum'd file = %s" % cksum_prod_filename)
 
         # Make sure they are strings
         cksum_values = cksum_output.split()
