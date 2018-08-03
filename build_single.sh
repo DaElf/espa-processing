@@ -31,9 +31,9 @@ if [ ! -f SOURCES/$repo.tar.gz ]; then
     done
 fi
 
-my_dist=$(cd ../../$repo; git describe --long --tags | awk -F'-g' '{print "g"$2}')
-rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/$repo.spec
-sudo mock --old-chroot --verbose \
+my_dist=$(cd ../../$repo; git describe --long --tags | awk -F'-g' '{print ".g"$2}')
+rpmbuild --define "_topdir $(pwd)" --define "dist $my_dist" -bs SPECS/*$repo.spec
+sudo mock --verbose \
      --configdir=$(pwd)/../mock_config \
      --define "dist $my_dist" \
      -r my-epel-7-x86_64 \
@@ -42,5 +42,5 @@ sudo mock --old-chroot --verbose \
 
 mkdir -p $root/CentOS/7/local/x86_64/
 rm -f $root/CentOS/7/local/x86_64/RPMS/${repo}*
-find ./ -name \*.x86_64.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \;
+find ./ -name \*.x86_64.rpm -o -name \*.noarch.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \;
 createrepo $root/CentOS/7/local/x86_64/
