@@ -50,41 +50,6 @@ def package_product(immutability, source_directory, destination_directory,
     # Make sure the directory exists.
     utilities.create_directory(destination_directory)
 
-    # Remove any pre-existing files
-    # Grab the first part of the filename, which is not unique
-    filename_parts = product_full_path.split('-')
-    filename_parts[-1] = '*'  # Replace the last element of the list
-    filename = '-'.join(filename_parts)  # Join with '-'
-
-    # Name of the checksum to be created
-    cksum_filename = '.'.join([product_name, settings.ESPA_CHECKSUM_EXTENSION])
-
-    # Change the attributes on the files so that we can remove them
-    if immutability:
-        cmd = ' '.join(['sudo', 'chattr', '-if', filename, cksum_filename])
-        output = ''
-        try:
-            output = utilities.execute_cmd(cmd)
-        except Exception:
-            pass
-        finally:
-            if len(output) > 0:
-                logger.info(output)
-
-    # Remove the file first just in-case this is a second run
-#    cmd = ' '.join(['rm', '-f', filename])
-# With the new product_name the filename_parts are no longer valid
-# But this seems like a unnecessary things to do as the orignal
-# comment is "just in-case" -- RMC
-    cmd = ' '.join(['ls', '-l', filename])
-    logger.info("This might be rm %s", cmd)
-    output = ''
-    try:
-        output = utilities.execute_cmd(cmd)
-    finally:
-        if len(output) > 0:
-            logger.info(output)
-
     # Change to the source directory
     current_directory = os.getcwd()
     os.chdir(source_directory)
