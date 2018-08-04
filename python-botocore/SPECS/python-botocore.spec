@@ -24,7 +24,7 @@ Summary:        Low-level, data-driven core of boto 3
 License:        ASL 2.0
 URL:            https://github.com/boto/botocore
 Source0:        https://pypi.io/packages/source/b/%{pypi_name}/%{pypi_name}-%{version}.tar.gz
-Patch0:         botocore-1.5.3-fix_dateutil_version.patch
+#Patch0:         botocore-1.5.3-fix_dateutil_version.patch
 BuildArch:      noarch
 
 %description
