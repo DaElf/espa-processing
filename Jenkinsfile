@@ -27,18 +27,24 @@ def buildIt(String name) {
 					   [$class: 'CloneOption',
 					    depth: 0,
 					    noTags: false,
-					    reference: '/devel/git_reference_repos/espa-rpmbuild',
+					    reference: '/devel/git_reference_repos/espa-all',
 					    shallow: false,
-					    timeout: 120]
+					    timeout: 120],
+					   [$class: 'SubmoduleOption',
+					    disableSubmodules: false,
+					    parentCredentials: true,
+					    recursiveSubmodules: true,
+					    reference: '',
+					    trackingSubmodules: true]
 					   ],
 			      submoduleCfg: [],
 			      userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
-						   url: 'https://code.usgs.gov/eros-lsds/espa-rpmbuild.git']
+						   url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
 						  ]
 			      ])
-		    env.my_dist = "${my_dist}"
+		    env.my_dist = "${my_dist}.${BUILD_NUMBER}"
 		    checkout scm
-		    dir(name) {
+		    dir('espa-rpmbuild/'+name) {
 			sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
 			sh """sudo mock \
 			--verbose \
@@ -49,12 +55,25 @@ def buildIt(String name) {
 			--resultdir ${pwd()}/mock_result \
 			SRPMS/*.src.rpm"""
 		    }
+		    dir('espa-rpmbuild/'+name+'/mock_result') {
+			//stash name: name, includes: '*.rpm'
+			archiveRpms()
+		    }
 		}
 	    }
 	} catch(error) {
 	    error("Fatal exception while building ${name}")
 	    throw error
 	}
+    }
+}
+
+def archiveRpms() {
+    try {
+	archiveArtifacts artifacts: "**/*.rpm", fingerprint: true
+    } catch(e) {
+	echo("archiving stuff failed apparently")
+	echo(e)
     }
 }
 
