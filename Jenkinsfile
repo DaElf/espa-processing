@@ -2,11 +2,11 @@
 properties(
   [parameters(
       [string(defaultValue: 'master'
-              , name: 'build_branch'
-              , description: 'Build this branch if it exists'),
-       string(defaultValue: '9000.1.0'
-              , name: 'force_rpm_version'
-              , description: 'Version to force built rpms to be, its over 9000.'),
+	      , name: 'build_branch'
+	      , description: 'Build this branch if it exists'),
+       string(defaultValue: '.eros'
+	      , name: 'my_dist'
+	      , description: 'A dist name for packages'),
       ]
     ),
    pipelineTriggers([])
@@ -14,25 +14,30 @@ properties(
 )
 
 def buildIt(String name) {
-  return {
-    try {
-    stage(name) {
-      node("mock-build") {
-	      env.my_dist = "${force_rpm_version}"
-	      git branch: "JenkinsBuild", credentialsId: 'rcattelan-code-usgs-gov', url: 'https://code.usgs.gov/eros-lsds/espa-rpmbuild.git'
-	      dir(name) {
-		      sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
-		      sh "sudo my_dist=Test0 mock --configdir=${WORKSPACE}/mock_config -r my-epel-7-x86_64 \
-                        --rootdir=${pwd()}/root \
-                        --define \"dist $my_dist\" -r my-epel-7-x86_64 --resultdir ${pwd()}/mock_result SRPMS/*.src.rpm"
-	      }
-      }
-    }
-    } catch(error) {
+    return {
+	try {
+	    stage(name) {
+		node("mock-build") {
+		    env.my_dist = "${my_dist}"
+		    checkout scm
+		    dir(name) {
+			sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
+			sh """sudo mock \
+			--verbose \
+			--configdir=${WORKSPACE}/mock_config \
+			--root my-epel-7-x86_64 \
+			--rootdir=${pwd()}/root \
+			--define \"dist $my_dist\" \
+			--resultdir ${pwd()}/mock_result \
+			SRPMS/*.src.rpm"""
+		    }
+		}
+	    }
+	} catch(error) {
 	    error("Fatal exception while building ${name}")
 	    throw error
+	}
     }
-  }
 }
 
 par_tasks = [:]
