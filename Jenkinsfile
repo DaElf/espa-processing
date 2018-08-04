@@ -18,6 +18,24 @@ def buildIt(String name) {
 	try {
 	    stage(name) {
 		node("mock-build") {
+		    checkout([$class: 'GitSCM',
+			      branches: [[name: '*/master']],
+			      doGenerateSubmoduleConfigurations: false,
+			      extensions: [
+					   [$class: 'GitLFSPull'],
+					   [$class: 'CheckoutOption', timeout: 600],
+					   [$class: 'CloneOption',
+					    depth: 0,
+					    noTags: false,
+					    reference: '/devel/git_reference_repos/espa-rpmbuild',
+					    shallow: false,
+					    timeout: 120]
+					   ],
+			      submoduleCfg: [],
+			      userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
+						   url: 'https://code.usgs.gov/eros-lsds/espa-rpmbuild.git']
+						  ]
+			      ])
 		    env.my_dist = "${my_dist}"
 		    checkout scm
 		    dir(name) {
