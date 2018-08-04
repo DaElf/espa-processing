@@ -34,7 +34,7 @@ def buildIt(String name) {
 					    disableSubmodules: false,
 					    parentCredentials: true,
 					    recursiveSubmodules: true,
-					    reference: '',
+					    reference: '/devel/git_reference_repos/espa-all',
 					    trackingSubmodules: true]
 					   ],
 			      submoduleCfg: [],
