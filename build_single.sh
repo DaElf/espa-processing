@@ -42,5 +42,5 @@ sudo mock --verbose \
 
 mkdir -p $root/CentOS/7/local/x86_64/
 rm -f $root/CentOS/7/local/x86_64/RPMS/${repo}*
-find ./ -name \*.x86_64.rpm -o -name \*.noarch.rpm -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \;
+find ./mock_result \( -name \*.x86_64.rpm -o -name \*.noarch.rpm \) -exec rsync -aP {}  $root/CentOS/7/local/x86_64/RPMS/ \;
 createrepo $root/CentOS/7/local/x86_64/
