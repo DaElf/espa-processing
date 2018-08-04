@@ -4,7 +4,7 @@ properties(
 			       , name: 'build_branch'
 			       , description: 'Build this branch if it exists'),
 			string(defaultValue: '.eros'
-			       , name: 'my_dist'
+			       , name: 'param_dist'
 			       , description: 'A dist name for packages'),
 			]
 		       ),
@@ -41,7 +41,7 @@ def buildIt(String name) {
 					       url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
 					      ]
 			  ])
-		env.my_dist = "${my_dist}.${BUILD_NUMBER}"
+		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
 		dir('espa-rpmbuild/'+name) {
 		    sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
 		    sh """sudo mock \
