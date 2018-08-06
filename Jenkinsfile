@@ -12,46 +12,62 @@ properties(
 	    ]
 	   )
 
+
 def buildIt(String name) {
     return {
 	stage(name) {
 	    node("mock-build") {
-		cleanWs()
-		checkout([$class: 'GitSCM',
-			  branches: [[name: '*/master']],
-			  extensions: [
-				       [$class: 'GitLFSPull'],
-				       [$class: 'CheckoutOption', timeout: 600],
-				       [$class: 'CloneOption',
-					depth: 0,
-					noTags: false,
-					reference: '',
-					shallow: false,
-					timeout: 120],
-				       [$class: 'SubmoduleOption',
-					disableSubmodules: false,
-					parentCredentials: true,
-					recursiveSubmodules: false,
-					reference: '',
-					trackingSubmodules: true,
-					timeout: 120]
-				       ],
-			  submoduleCfg: [],
-			  userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
-					       url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
-					      ]
-			  ])
+		    stage('pull artifacts') {
+			dir(name+'/local-repo/x86_64/RPMS') {
+				copyArtifacts(projectName: 'cots-rpmbuild')
+			}
+			dir(name+'/local-repo/x86_64') {
+				docker.withRegistry('https://707566951618.dkr.ecr.us-west-2.amazonaws.com', 'ecr:us-west-2:daelf-aws-creds') {
+					docker.image('707566951618.dkr.ecr.us-west-2.amazonaws.com/jenkins-tools').inside {
+						sh 'ls -lR; createrepo .'
+					}
+				}
+			}
+		    }
+		    checkout([$class: 'GitSCM',
+			      branches: [[name: '*/master']],
+			      extensions: [
+				      [$class: 'GitLFSPull'],
+				      [$class: 'CheckoutOption', timeout: 600],
+				      [$class: 'CloneOption',
+				       depth: 0,
+				       noTags: false,
+				       reference: '',
+				       shallow: false,
+				       timeout: 120],
+				      [$class: 'SubmoduleOption',
+				       disableSubmodules: false,
+				       parentCredentials: true,
+				       recursiveSubmodules: false,
+				       reference: '',
+				       trackingSubmodules: true,
+				       timeout: 120]
+			      ],
+			      submoduleCfg: [],
+			      userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
+						   url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
+						 ]
+			     ])
 		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
 		dir('espa-rpmbuild/'+name) {
-		    sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec"
-		    sh """sudo mock \
-			--verbose			    \
-			--configdir=${pwd()}/../mock_config \
-			--root my-epel-7-x86_64		    \
-			--rootdir=${pwd()}/root		    \
-			--define \"dist $my_dist\"	    \
-			--resultdir ${pwd()}/mock_result    \
-			SRPMS/*.src.rpm"""
+			sh '''cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg'
+			      sed -i -e "s#baseurl=file:///my-local-dir.*#baseurl=file://${pwd()}/local-repo/x86_64#g" local-mock.cfg
+			      '''
+			sh '''rpmbuild --define "_topdir ${pwd()}" --define "dist $my_dist" -bs SPECS/*.spec
+		              sudo mock			    \
+			      --verbose			    \
+			      --configdir=${pwd()}          \
+			      --root local-mock             \
+			      --rootdir=${pwd()}/root	    \
+			      --define "dist $my_dist"      \
+			      --resultdir ${pwd()}/mock_result    \
+			      SRPMS/*.src.rpm
+                            '''
 		}
 		dir('espa-rpmbuild/'+name+'/mock_result') {
 		    stash name: name, includes: '*.rpm'
