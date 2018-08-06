@@ -102,7 +102,9 @@ par_tasks["python-jmespath"]  = buildIt("python-jmespath")
 par_tasks["python-s3transfer"]  = buildIt("python-s3transfer")
 
 
-parallel par_tasks
+par_tasks2 = [:]
+par_tasks2["espa-processing"] = buildIt("espa-processing")
+parallel par_tasks2
 
 stage("All done") {
     node {
