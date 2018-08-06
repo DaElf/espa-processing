@@ -56,7 +56,7 @@ def buildIt(String name) {
 		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
 		dir('espa-rpmbuild/'+name) {
 			sh '''cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg'
-			      sed -i -e "s#baseurl=file:///my-local-dir.*#baseurl=file://${pwd()}/local-repo/x86_64#g" local-mock.cfg
+			      sed -i -e "s#baseurl=*#baseurl=file://${pwd()}/local-repo/x86_64#g" local-mock.cfg
 			      '''
 			sh '''rpmbuild --define "_topdir ${pwd()}" --define "dist $my_dist" -bs SPECS/*.spec
 		              sudo mock			    \
