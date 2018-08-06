@@ -13,61 +13,61 @@ properties(
 	   )
 
 
-def buildIt(String name) {
+def buildIt(String name, Boolean do_unstash) {
     return {
 	stage(name) {
 	    node("mock-build") {
-		    stage('pull artifacts') {
-			dir(name+'/local-repo/x86_64/RPMS') {
-				copyArtifacts(projectName: 'cots-rpmbuild')
-			}
-			dir(name+'/local-repo/x86_64') {
-				docker.withRegistry('https://707566951618.dkr.ecr.us-west-2.amazonaws.com', 'ecr:us-west-2:daelf-aws-creds') {
-					docker.image('707566951618.dkr.ecr.us-west-2.amazonaws.com/jenkins-tools').inside {
-						sh 'ls -lR; createrepo .'
-					}
-				}
-			}
+		dir('local-repo/x86_64/RPMS') {
+		    copyArtifacts(projectName: 'cots-rpmbuild')
+		    if (do_unstash) {
+			unstash 'espa-product-formatter'
+			unstash 'espa-python-library'
+			unstash 'python-botocore'
+			unstash 'python-jmespath'
+			unstash 'python-dateutil'
 		    }
-		    checkout([$class: 'GitSCM',
-			      branches: [[name: '*/master']],
-			      extensions: [
-				      [$class: 'GitLFSPull'],
-				      [$class: 'CheckoutOption', timeout: 600],
-				      [$class: 'CloneOption',
-				       depth: 0,
-				       noTags: false,
-				       reference: '',
-				       shallow: false,
-				       timeout: 120],
-				      [$class: 'SubmoduleOption',
-				       disableSubmodules: false,
-				       parentCredentials: true,
-				       recursiveSubmodules: false,
-				       reference: '',
-				       trackingSubmodules: true,
-				       timeout: 120]
-			      ],
-			      submoduleCfg: [],
-			      userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
-						   url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
-						 ]
-			     ])
+		}
+		dir('local-repo/x86_64') {
+		    sh 'createrepo .; ls -lR; pwd'
+		}
+		checkout([$class: 'GitSCM',
+			  branches: [[name: '*/master']],
+			  extensions: [
+				       [$class: 'GitLFSPull'],
+				       [$class: 'CheckoutOption', timeout: 600],
+				       [$class: 'CloneOption',
+					depth: 0,
+					noTags: false,
+					reference: '',
+					shallow: false,
+					timeout: 120],
+				       [$class: 'SubmoduleOption',
+					disableSubmodules: false,
+					parentCredentials: true,
+					recursiveSubmodules: false,
+					reference: '',
+					trackingSubmodules: true,
+					timeout: 120]
+				       ],
+			  submoduleCfg: [],
+			  userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
+					       url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
+					      ]
+			  ])
 		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
 		dir('espa-rpmbuild/'+name) {
-			sh '''cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg'
-			      sed -i -e "s#baseurl=http://127.0.0.1:9000*#baseurl=file://${pwd()}/local-repo/x86_64#g" local-mock.cfg
-			      '''
-			sh '''rpmbuild --define "_topdir ${pwd()}" --define "dist $my_dist" -bs SPECS/*.spec
-		              sudo mock			    \
-			      --verbose			    \
-			      --configdir=${pwd()}          \
-			      --root local-mock             \
-			      --rootdir=${pwd()}/root	    \
-			      --define "dist $my_dist"      \
-			      --resultdir ${pwd()}/mock_result    \
-			      SRPMS/*.src.rpm
-                            '''
+		    sh 'cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg'
+		    sh "sed -i -e 's#baseurl=http://127.0.0.1:9000.*#baseurl=file://${WORKSPACE}/local-repo/x86_64#g' local-mock.cfg"
+		    sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec; \
+			      sudo mock					\
+			      --verbose					\
+			      --no-clean				\
+			      --configdir=${pwd()}			\
+			      --root local-mock				\
+			      --rootdir=${pwd()}/root			\
+			      --define \"dist $my_dist\"		\
+			      --resultdir ${pwd()}/mock_result		\
+			      SRPMS/*.src.rpm"
 		}
 		dir('espa-rpmbuild/'+name+'/mock_result') {
 		    stash name: name, includes: '*.rpm'
@@ -78,33 +78,34 @@ def buildIt(String name) {
     }
 }
 
+par_tasks = [:]
+par_tasks["watchtower"]  = buildIt("watchtower", false)
+par_tasks["python-botocore"]  = buildIt("python-botocore", false)
+par_tasks["python-jmespath"]  = buildIt("python-jmespath", false)
+par_tasks["python-dateutil"]  = buildIt("python-dateutil", false)
+par_tasks["python-s3transfer"]  = buildIt("python-s3transfer", false)
+par_tasks["awscli"]  = buildIt("awscli", false)
+parallel par_tasks
 
 par_tasks = [:]
-par_tasks["espa-product-formatter"] = buildIt("espa-product-formatter")
-par_tasks["espa-python-library"] = buildIt("espa-python-library")
-par_tasks["espa-l2qa-tools"] = buildIt("espa-l2qa-tools")
-par_tasks["espa-spectral-indices"] = buildIt("espa-spectral-indices")
-par_tasks["espa-surface-water-extent"] = buildIt("espa-surface-water-extent")
-par_tasks["espa-surface-reflectance"] = buildIt("espa-surface-reflectance")
-par_tasks["espa-surface-temperature"] = buildIt("espa-surface-temperature")
-par_tasks["espa-elevation"] = buildIt("espa-elevation")
-par_tasks["espa-reprojection"] = buildIt("espa-reprojection")
-par_tasks["espa-plotting"] = buildIt("espa-plotting")
-par_tasks["espa-processing"] = buildIt("espa-processing")
-par_tasks["espa-cloud-masking"]  = buildIt("espa-cloud-masking")
-par_tasks["watchtower"]  = buildIt("watchtower")
+par_tasks["espa-product-formatter"] = buildIt("espa-product-formatter", false)
+par_tasks["espa-python-library"] = buildIt("espa-python-library", false)
+parallel par_tasks
 
-par_tasks["awscli"]  = buildIt("awscli")
-par_tasks["python-boto3"]  = buildIt("python-boto3")
-par_tasks["python-botocore"]  = buildIt("python-botocore")
-par_tasks["python-dateutil"]  = buildIt("python-dateutil")
-par_tasks["python-jmespath"]  = buildIt("python-jmespath")
-par_tasks["python-s3transfer"]  = buildIt("python-s3transfer")
+par_tasks = [:]
+par_tasks["python-boto3"]  = buildIt("python-boto3", true)
+par_tasks["espa-surface-temperature"] = buildIt("espa-surface-temperature", true)
+par_tasks["espa-l2qa-tools"] = buildIt("espa-l2qa-tools", true)
+par_tasks["espa-spectral-indices"] = buildIt("espa-spectral-indices", true)
+par_tasks["espa-surface-water-extent"] = buildIt("espa-surface-water-extent", true)
+par_tasks["espa-surface-reflectance"] = buildIt("espa-surface-reflectance", true)
+par_tasks["espa-elevation"] = buildIt("espa-elevation", true)
+par_tasks["espa-reprojection"] = buildIt("espa-reprojection", false)
+par_tasks["espa-plotting"] = buildIt("espa-plotting", false)
+par_tasks["espa-processing"] = buildIt("espa-processing", false)
+par_tasks["espa-cloud-masking"]  = buildIt("espa-cloud-masking", false)
+parallel par_tasks
 
-
-par_tasks2 = [:]
-par_tasks2["espa-processing"] = buildIt("espa-processing")
-parallel par_tasks2
 
 stage("All done") {
     node {
