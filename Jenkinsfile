@@ -17,20 +17,18 @@ def buildIt(String name, Boolean do_unstash) {
     return {
 	stage(name) {
 	    node("mock-build") {
-		stage("grab artifacts") {
-		    dir('local-repo/x86_64/RPMS') {
-			copyArtifacts(projectName: 'cots-rpmbuild')
-			if (do_unstash) {
-			    unstash 'espa-product-formatter'
-			    unstash 'espa-python-library'
-			    unstash 'python-botocore'
-			    unstash 'python-jmespath'
-			    unstash 'python-dateutil'
-			}
+		dir('local-repo/x86_64/RPMS') {
+		    copyArtifacts(projectName: 'cots-rpmbuild')
+		    if (do_unstash) {
+			unstash 'espa-product-formatter'
+			unstash 'espa-python-library'
+			unstash 'python-botocore'
+			unstash 'python-jmespath'
+			unstash 'python-dateutil'
 		    }
-		    dir('local-repo/x86_64') {
-			sh 'createrepo .; ls -lR; pwd'
-		    }
+		}
+		dir('local-repo/x86_64') {
+		    sh 'createrepo .; ls -lR; pwd'
 		}
 		checkout([$class: 'GitSCM',
 			  branches: [[name: '*/master']],
