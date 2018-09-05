@@ -28,7 +28,7 @@ def buildIt(String name, Boolean do_unstash) {
 		    }
 		}
 		dir('local-repo/x86_64') {
-		    sh 'createrepo .; ls -lR; pwd'
+		    sh 'createrepo_c .; ls -lR; pwd'
 		}
 		checkout([$class: 'GitSCM',
 			  branches: [[name: '*/master']],
