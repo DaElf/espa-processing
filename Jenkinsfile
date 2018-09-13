@@ -79,6 +79,7 @@ def buildIt(String name, Boolean do_unstash) {
 }
 
 par_tasks = [:]
+par_tasks["goofys"]  = buildIt("goofys", false)
 par_tasks["watchtower"]  = buildIt("watchtower", false)
 par_tasks["python-botocore"]  = buildIt("python-botocore", false)
 par_tasks["python-jmespath"]  = buildIt("python-jmespath", false)
