@@ -90,14 +90,20 @@ parallel par_tasks
 
 par_tasks = [:]
 par_tasks["espa-product-formatter"] = buildIt("espa-product-formatter", false)
+parallel par_tasks
+
+par_tasks = [:]
 par_tasks["espa-python-library"] = buildIt("espa-python-library", false)
+parallel par_tasks
+
+par_tasks = [:]
+par_tasks["espa-spectral-indices"] = buildIt("espa-spectral-indices", true)
 parallel par_tasks
 
 par_tasks = [:]
 par_tasks["python-boto3"]  = buildIt("python-boto3", true)
 par_tasks["espa-surface-temperature"] = buildIt("espa-surface-temperature", true)
 par_tasks["espa-l2qa-tools"] = buildIt("espa-l2qa-tools", true)
-par_tasks["espa-spectral-indices"] = buildIt("espa-spectral-indices", true)
 par_tasks["espa-surface-water-extent"] = buildIt("espa-surface-water-extent", true)
 par_tasks["espa-surface-reflectance"] = buildIt("espa-surface-reflectance", true)
 par_tasks["espa-elevation"] = buildIt("espa-elevation", true)
