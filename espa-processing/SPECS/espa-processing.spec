@@ -28,6 +28,7 @@ Requires:       python2-boto3
 Requires:       python-gdal
 Requires:	python-watchtower
 Requires:	awscli
+Requires:	rsync
 
 %description
 %summary
