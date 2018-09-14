@@ -17,19 +17,7 @@ def buildIt(String name, Boolean do_unstash) {
     return {
 	stage(name) {
 	    node("mock-build") {
-		dir('local-repo/x86_64/RPMS') {
-		    copyArtifacts(projectName: 'cots-rpmbuild')
-		    if (do_unstash) {
-			unstash 'espa-product-formatter'
-			unstash 'espa-python-library'
-			unstash 'python-botocore'
-			unstash 'python-jmespath'
-			unstash 'python-dateutil'
-		    }
-		}
-		dir('local-repo/x86_64') {
-		    sh 'createrepo_c .; ls -lR; pwd'
-		}
+
 		checkout([$class: 'GitSCM',
 			  branches: [[name: '*/master']],
 			  extensions: [
@@ -54,10 +42,23 @@ def buildIt(String name, Boolean do_unstash) {
 					       url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
 					      ]
 			  ])
+		dir('espa-rpmbuild/local-repo/x86_64/RPMS') {
+		    copyArtifacts(projectName: 'cots-rpmbuild')
+		    if (do_unstash) {
+			unstash 'espa-product-formatter'
+			unstash 'espa-python-library'
+			unstash 'python-botocore'
+			unstash 'python-jmespath'
+			unstash 'python-dateutil'
+		    }
+		}
+		dir('espa-rpmbuild/local-repo/x86_64') {
+		    sh 'createrepo_c .; ls -lR; pwd'
+		}
 		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
 		dir('espa-rpmbuild/'+name) {
 		    sh 'cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg'
-		    sh "sed -i -e 's#baseurl=http://127.0.0.1:9000.*#baseurl=file://${WORKSPACE}/local-repo/x86_64#g' local-mock.cfg"
+		    sh "sed -i -e 's#baseurl=http://127.0.0.1:9000.*#baseurl=file://${WORKSPACE}/espa-rpmbuild/local-repo/x86_64#g' local-mock.cfg"
 		    sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec; \
 			      sudo mock					\
 			      --verbose					\
