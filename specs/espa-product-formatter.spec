@@ -8,7 +8,7 @@
 %define project espa-product-formatter
 %define build_timestamp %(date +"%%Y%%m%%d%%H%%M%%S")
 # Specify the repository tag/branch to clone and build from
-%define tagname dev_v1.15.0
+%define tagname dev_v1.16.0
 # Specify the name of the directory to clone into
 %define clonedname %{name}-%{tagname}
 # Change the default rpm name format for the rpm built by this spec file
@@ -17,7 +17,7 @@
 
 # ----------------------------------------------------------------------------
 Name:		%{project}
-Version:	1.15.0
+Version:	1.16.0
 Release:	1.%{build_timestamp}
 Summary:	ESPA Product Formatting Software
 
@@ -78,5 +78,7 @@ rm -rf %{buildroot}
 
 # ----------------------------------------------------------------------------
 %changelog
+* Tue Sep 18 2018 Sam Gould <sgould@contractor.usgs.gov>
+- Initial Version for ESPA 2.28.0
 * Thu Feb 22 2018 Jake Brinkmann <jacob.brinkmann.ctr@usgs.gov>
 - Initial Version for ESPA 2.27.0
