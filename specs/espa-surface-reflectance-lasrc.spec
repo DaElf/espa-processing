@@ -18,7 +18,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}-%{algorithm}
 Version:	1.4.0
-Release:	1.%{build_timestamp}
+Release:	2.%{build_timestamp}
 Summary:	ESPA Surface Reflectance Software - LaSRC
 
 Group:		ESPA

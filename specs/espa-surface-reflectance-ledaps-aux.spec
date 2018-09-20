@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}-%{algorithm}
 Version:	3.3.0
-Release:	1.%{build_timestamp}
+Release:	2.%{build_timestamp}
 Summary:	ESPA Surface Reflectance Software - Ledaps - Auxiliary
 
 Group:		ESPA

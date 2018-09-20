@@ -20,7 +20,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}-%{algorithm}
 Version:	1.1.0
-Release:	1.%{build_timestamp}
+Release:	2.%{build_timestamp}
 Summary:	ESPA Surface Temperature Software - Auxiliary
 
 Group:		ESPA

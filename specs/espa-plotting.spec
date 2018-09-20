@@ -18,7 +18,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}
 Version:	0.1.0
-Release:	3.%{build_timestamp}
+Release:	4.%{build_timestamp}
 Summary:	ESPA Plotting and Statistics Software
 
 Group:		ESPA

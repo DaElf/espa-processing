@@ -18,7 +18,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}
 Version:	1.0.13
-Release:	1.%{build_timestamp}
+Release:	2.%{build_timestamp}
 Summary:	ESPA Surface Reflectance Software
 
 Group:		ESPA

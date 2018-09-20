@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}
 Version:	1.0.9
-Release:	1.%{build_timestamp}
+Release:	2.%{build_timestamp}
 Summary:	ESPA Surface Temperature Software
 
 Group:		ESPA

@@ -18,7 +18,7 @@
 # ----------------------------------------------------------------------------
 Name:		%{project}
 Version:	1.0.2
-Release:	1.%{build_timestamp}
+Release:	2.%{build_timestamp}
 Summary:	ESPA Reprojection Software
 
 Group:		ESPA

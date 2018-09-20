@@ -19,7 +19,7 @@ Name:		%{project}-%{algorithm}
 # This version represents the schema version, and not the
 # espa-product-formatter version.
 Version:	2.0.0
-Release:	6.%{build_timestamp}
+Release:	7.%{build_timestamp}
 Summary:	ESPA Metadata Schemas
 
 Group:		ESPA
