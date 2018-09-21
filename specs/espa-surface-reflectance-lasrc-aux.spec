@@ -10,7 +10,7 @@
 %define algorithm lasrc-aux
 %define build_timestamp %(date +"%%Y%%m%%d%%H%%M%%S")
 # Specify the repository tag/branch to clone and build from
-%define tagname lasrc_v1.4.0
+%define tagname lasrc_v1.4.1
 # Specify the name of the directory to clone into
 %define clonedname %{name}-%{tagname}
 # Change the default rpm name format for the rpm built by this spec file
