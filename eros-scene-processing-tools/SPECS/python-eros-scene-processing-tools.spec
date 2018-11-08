@@ -13,6 +13,7 @@ Source0:        eros-scene-processing-tools.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  python-devel
+BuildRequires:  python-setuptools
 Requires:	python2-boto3 >= 1.7
 
 %description
