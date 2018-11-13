@@ -13,7 +13,7 @@
         "include_cfmask": false,
         "include_customized_source_data": false,
         "include_dswe": false,
-        "include_lst": false,
+        "include_st": false,
         "include_source_data": false,
         "include_source_metadata": false,
         "include_sr": false,
@@ -46,7 +46,9 @@
         "std_parallel_2": null,
         "target_projection": null,
         "utm_north_south": "north",
-        "utm_zone": null
+        "utm_zone": null,
+        "st_algorithm": "single_channel",
+        "reanalysis_source": "narr"
     },
     "orderid": "ORDER_ID",
     "product_type": "PRODUCT_TYPE",

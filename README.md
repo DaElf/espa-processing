@@ -1,6 +1,6 @@
-## ESPA Processing Version 2.27.1 Release Notes
+## ESPA Processing Version 2.29.0 Release Notes
 
-See git tag [v2.27.1]
+See git tag [v2.29.0]
 
 ### General Information
 This project contains the code for processing a single input dataset to the final output products.  It is the controlling code for producing a product.  It does not produce science products on it's own, it calls on applications from other ESPA projects to perform that work.  Having said that, it does contain some code to perform a few things, such as, statistics generation, statistics plotting, and warping (using GDAL).
@@ -9,8 +9,9 @@ This project contains the code for processing a single input dataset to the fina
 Please see the Release Tags for notes related to past versions.
 
 - Version change for system wide versioning
-- Remove Level-1 GCP/VER metadata files, if source not ordered
-- Fix SR Band 6 statistics glob
+- Add ability to process Surface Temperature using Split Window algorithm 
+- Add ability to process Single Channel Surface Temperature algorithm using
+  MERRA-2, FP, or FP-IT input reanalysis data
 
 ## Supported Science Products
 To generate products for a science application, it must be installed on the system and the applications provided must be available on the PATH.  See the respective science projects for installation instructions and auxiliary data requirements.

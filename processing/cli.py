@@ -17,7 +17,7 @@ import processor
 
 
 APP_NAME = 'ESPA-Processing'
-VERSION = '2.23.0.1'
+VERSION = '2.29.0'
 TEMPLATE_FILENAME = '/usr/local/share/espa/order_template.json'
 
 
@@ -372,6 +372,21 @@ def build_command_line_parser():
                         default=None,
                         metavar='FLOAT',
                         help='Standard Parallel 2 reprojection value')
+
+    custom.add_argument('--st-algorithm',
+                        action='store',
+                        dest='st_algorithm',
+                        choices=['single_channel', 'split_window'],
+                        default='single_channel',
+                        help='Surface Temperature algorithm to use')
+
+    custom.add_argument('--reanalysis-source',
+                        action='store',
+                        dest='reanalysis_source',
+                        choices=['narr', 'merra2', 'fp', 'fpit'],
+                        default='narr',
+                        help='Reanalysis source for Single Channel Surface '
+                             'Temperature')
 
     # ------------------------------------------------------------------------
     developer = parser.add_argument_group('developer')
@@ -766,6 +781,28 @@ def update_target_projection(args, order):
     return new_order
 
 
+def update_st_options(args, order):
+    """Update the options related to Surface Temperature in the order dictionary
+
+    Args:
+        args <args>: Command line arguments
+        order <dict>: Currently populated order dictionary
+
+    Returns:
+        <dict>: Updated order options
+    """
+
+    new_order = order.copy()
+
+    if args.include_st is not None:
+        new_order['options']['st_algorithm'] = args.st_algorithm
+
+        if args.st_algorithm == "single_channel":
+            new_order['options']['reanalysis_source'] = args.reanalysis_source
+
+    return new_order
+
+
 def update_template(args, template):
     """Update template with provided command line arguments
 
@@ -815,6 +852,7 @@ def update_template(args, template):
     order = update_pixel_size(args, order)
     order = update_image_extents(args, order)
     order = update_target_projection(args, order)
+    order = update_st_options(args, order)
 
     # Developer --------------------------------------------------------------
     order['options']['keep_directory'] = args.dev_mode

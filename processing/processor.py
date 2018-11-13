@@ -1028,9 +1028,17 @@ class LandsatProcessor(CDRProcessor):
         cmd = None
         if options['include_st']:
 
-            cmd = ['surface_temperature.py',
-                   '--xml', self._xml_filename,
-                   '--keep-intermediate-data']
+            if options['st_algorithm'] == "single_channel":
+                cmd = ['surface_temperature.py',
+                       '--xml', self._xml_filename,
+                       '--keep-intermediate-data',
+                       '--st_algorithm', options['st_algorithm'],
+                       '--reanalysis', options['reanalysis_source']]
+            else: # Split Window
+                cmd = ['surface_temperature.py',
+                       '--xml', self._xml_filename,
+                       '--keep-intermediate-data',
+                       '--st_algorithm', options['st_algorithm']]
 
             cmd = ' '.join(cmd)
 
