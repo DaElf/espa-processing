@@ -38,7 +38,7 @@ def buildIt(String name, Boolean do_unstash) {
 					timeout: 120]
 				       ],
 			  submoduleCfg: [],
-			  userRemoteConfigs: [[credentialsId: 'rcattelan-code-usgs-gov',
+			  userRemoteConfigs: [[credentialsId: 'gitlab-code.usgs',
 					       url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
 					      ]
 			  ])
