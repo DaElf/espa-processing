@@ -14,7 +14,9 @@ BuildRequires: netcdf-devel pkgconfig
 BuildRequires: libgeotiff-devel
 BuildRequires: jbigkit-devel
 BuildRequires: hdf-devel
+BuildRequires: hdf5-devel
 BuildRequires: HDF-EOS
+BuildRequires: HDF-EOS5
 #Requires:       
 
 %description
@@ -62,6 +64,10 @@ export ZLIBLIB=%{_libdir}
 export LZMALIB=%{_libdir}
 export SZIPLIB=%{_libdir}
 export HDFLIB=%{_libdir}/hdf
+export HDF5LIB=%{_libdir}
+export HDFEOS5_LIB=%{_libdir}
+export HDFEOS5_INC=%{_includedir}
+
 make %{?_smp_mflags} ENABLE_THREADING=yes
 
 
