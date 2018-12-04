@@ -112,6 +112,7 @@ par_tasks["espa-reprojection"] = buildIt("espa-reprojection", false)
 par_tasks["espa-plotting"] = buildIt("espa-plotting", false)
 par_tasks["espa-processing"] = buildIt("espa-processing", false)
 par_tasks["espa-cloud-masking"]  = buildIt("espa-cloud-masking", false)
+par_tasks["eros_scene_processing_tools"]  = buildIt("eros_scene_processing_tools", false)
 parallel par_tasks
 
 
