@@ -15,6 +15,7 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
 Requires:	python2-boto3 >= 1.7
+Requires:	espa-processing
 
 %description
 %summary
