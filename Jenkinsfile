@@ -1,8 +1,8 @@
 properties(
 	   [parameters(
-		       [string(defaultValue: 'master'
+		       [string(defaultValue: 'cloud-master'
 			       , name: 'build_branch'
-			       , description: 'Build this branch if it exists'),
+			       , description: 'This is not currently connected -- Build this branch if it exists'),
 			string(defaultValue: '.eros'
 			       , name: 'param_dist'
 			       , description: 'A dist name for packages'),
@@ -13,13 +13,13 @@ properties(
 	   )
 
 
-def buildIt(String name, Boolean do_unstash) {
+def buildIt(String name, def unstash_list = []) {
     return {
 	stage(name) {
 	    node("mock-build") {
 
 		checkout([$class: 'GitSCM',
-			  branches: [[name: '*/master']],
+			  branches: [[name: '*/*']],
 			  extensions: [
 				       [$class: 'GitLFSPull'],
 				       [$class: 'CheckoutOption', timeout: 600],
@@ -42,33 +42,40 @@ def buildIt(String name, Boolean do_unstash) {
 					       url: 'https://code.usgs.gov/eros-lsds/espa-all.git']
 					      ]
 			  ])
-		dir('espa-rpmbuild/local-repo/x86_64/RPMS') {
-		    copyArtifacts(projectName: 'cots-rpmbuild')
-		    if (do_unstash) {
-			unstash 'espa-product-formatter'
-			unstash 'espa-python-library'
-			unstash 'python-botocore'
-			unstash 'python-jmespath'
-			unstash 'python-dateutil'
-		    }
+		dir('local-repo/RPMS') {
+			copyArtifacts(projectName: 'eros-support-rpmbuild')
+			if (!unstash_list.isEmpty()) {
+				unstash_list.each { item ->
+					unstash name: item
+				}
+			}
 		}
-		dir('espa-rpmbuild/local-repo/x86_64') {
-		    sh 'createrepo_c .; ls -lR; pwd'
+		dir('local-repo') {
+		    sh '''
+			createrepo_c .
+			ls -lR
+			'''
 		}
 		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
+		dir(name) {
+		    sh 'rm -f '  + env.WORKSPACE + '/espa-rpmbuild/'+ name + '/SOURCES/' + name + '.tar.gz'
+		    sh 'mkdir -p ' + env.WORKSPACE + '/espa-rpmbuild/'+ name + '/SOURCES/'
+		    sh 'git branch -a; git archive --format=tar.gz -o ' + env.WORKSPACE + '/espa-rpmbuild/'+ name + '/SOURCES/' + name + '.tar.gz --prefix=' + name +'/ HEAD'
+		}
 		dir('espa-rpmbuild/'+name) {
-		    sh 'cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg'
-		    sh "sed -i -e 's#baseurl=http://127.0.0.1:9000.*#baseurl=file://${WORKSPACE}/espa-rpmbuild/local-repo/x86_64#g' local-mock.cfg"
-		    sh "rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec; \
-			      sudo mock					\
-			      --verbose					\
-			      --no-clean				\
-			      --configdir=${pwd()}			\
-			      --root local-mock				\
-			      --rootdir=${pwd()}/root			\
-			      --define \"dist $my_dist\"		\
-			      --resultdir ${pwd()}/mock_result		\
-			      SRPMS/*.src.rpm"
+		    sh """
+			cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg
+			sed -i -e 's#baseurl=http://127.0.0.1:9000.*#baseurl=file://${env.WORKSPACE}/local-repo#g' local-mock.cfg
+			rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec
+			sudo mock			 \
+			--verbose			 \
+			--configdir=${pwd()}		 \
+			--root local-mock		 \
+			--rootdir=${pwd()}/root		 \
+			--define \"dist $my_dist\"	 \
+			--resultdir ${pwd()}/mock_result \
+			SRPMS/*.src.rpm
+			"""
 		}
 		dir('espa-rpmbuild/'+name+'/mock_result') {
 		    stash name: name, includes: '*.rpm'
@@ -80,39 +87,22 @@ def buildIt(String name, Boolean do_unstash) {
 }
 
 par_tasks = [:]
-par_tasks["goofys"]  = buildIt("goofys", false)
-par_tasks["watchtower"]  = buildIt("watchtower", false)
-par_tasks["python-botocore"]  = buildIt("python-botocore", false)
-par_tasks["python-jmespath"]  = buildIt("python-jmespath", false)
-par_tasks["python-dateutil"]  = buildIt("python-dateutil", false)
-par_tasks["python-s3transfer"]  = buildIt("python-s3transfer", false)
-par_tasks["awscli"]  = buildIt("awscli", false)
+par_tasks["espa-product-formatter"] = buildIt("espa-product-formatter")
+par_tasks["espa-python-library"] = buildIt("espa-python-library")
+par_tasks["espa-reprojection"] = buildIt("espa-reprojection")
+par_tasks["espa-plotting"] = buildIt("espa-plotting")
+par_tasks["espa-processing"] = buildIt("espa-processing")
+par_tasks["eros-scene-processing-tools"]  = buildIt("eros-scene-processing-tools")
 parallel par_tasks
 
 par_tasks = [:]
-par_tasks["espa-product-formatter"] = buildIt("espa-product-formatter", false)
-parallel par_tasks
-
-par_tasks = [:]
-par_tasks["espa-python-library"] = buildIt("espa-python-library", false)
-parallel par_tasks
-
-par_tasks = [:]
-par_tasks["espa-spectral-indices"] = buildIt("espa-spectral-indices", true)
-parallel par_tasks
-
-par_tasks = [:]
-par_tasks["python-boto3"]  = buildIt("python-boto3", true)
-par_tasks["espa-surface-temperature"] = buildIt("espa-surface-temperature", true)
-par_tasks["espa-l2qa-tools"] = buildIt("espa-l2qa-tools", true)
-par_tasks["espa-surface-water-extent"] = buildIt("espa-surface-water-extent", true)
-par_tasks["espa-surface-reflectance"] = buildIt("espa-surface-reflectance", true)
-par_tasks["espa-elevation"] = buildIt("espa-elevation", true)
-par_tasks["espa-reprojection"] = buildIt("espa-reprojection", false)
-par_tasks["espa-plotting"] = buildIt("espa-plotting", false)
-par_tasks["espa-processing"] = buildIt("espa-processing", false)
-par_tasks["espa-cloud-masking"]  = buildIt("espa-cloud-masking", false)
-par_tasks["eros_scene_processing_tools"]  = buildIt("eros_scene_processing_tools", false)
+par_tasks["espa-surface-temperature"] = buildIt("espa-surface-temperature", ['espa-product-formatter'])
+par_tasks["espa-spectral-indices"] = buildIt("espa-spectral-indices", ['espa-product-formatter'])
+par_tasks["espa-l2qa-tools"] = buildIt("espa-l2qa-tools", ['espa-product-formatter'])
+par_tasks["espa-surface-water-extent"] = buildIt("espa-surface-water-extent", ['espa-product-formatter'])
+par_tasks["espa-surface-reflectance"] = buildIt("espa-surface-reflectance", ['espa-product-formatter'])
+par_tasks["espa-elevation"] = buildIt("espa-elevation", ['espa-python-library'])
+par_tasks["espa-cloud-masking"]  = buildIt("espa-cloud-masking", ['espa-product-formatter'])
 parallel par_tasks
 
 
