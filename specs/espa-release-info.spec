@@ -28,7 +28,6 @@ Packager:	USGS EROS LSRD
 
 # List of every RPM and what version they should be at
 Requires: espa-product-formatter == 1.16.0
-Requires: espa-product-formatter-schemas == 2.0.0
 Requires: espa-l2qa-tools == 1.7.1
 Requires: espa-surface-reflectance == 1.0.13
 Requires: espa-surface-reflectance-ledaps == 3.3.0
