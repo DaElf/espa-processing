@@ -1,5 +1,6 @@
+%{!?build_num:%define build_num 0}
 Name:           espa-spectral-indices
-Version:        1.0
+Version:        1.0.b_%{build_num}
 Release:        1%{?dist}
 Summary:        ESPA spectral indices
 

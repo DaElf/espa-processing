@@ -1,5 +1,6 @@
+%{!?build_num:%define build_num 0}
 Name:           espa-surface-temperature
-Version:        1.1.1
+Version:        1.1.1.b_%{build_num}
 Release:        1%{?dist}
 Summary:        ESPA surface temperature
 

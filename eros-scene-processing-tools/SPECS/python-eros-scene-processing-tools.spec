@@ -2,8 +2,9 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
 
+%{!?build_num:%define build_num 0}
 Name:           python-eros-scene-processing-tools
-Version:        0.1
+Version:        0.1.b_%{build_num}
 Release:        1%{?dist}
 Summary:        Tools for submitting AWS batch jobs for the EROS image processing system
 
