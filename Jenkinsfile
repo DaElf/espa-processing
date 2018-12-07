@@ -56,7 +56,8 @@ def buildIt(String name, def unstash_list = []) {
 			ls -lR
 			'''
 		}
-		env.my_dist = "${param_dist}.${BUILD_NUMBER}"
+		env.my_dist = "${param_dist}"
+		env.my_build = "${BUILD_NUMBER}"
 		dir(name) {
 		    sh 'rm -f '  + env.WORKSPACE + '/espa-rpmbuild/'+ name + '/SOURCES/' + name + '.tar.gz'
 		    sh 'mkdir -p ' + env.WORKSPACE + '/espa-rpmbuild/'+ name + '/SOURCES/'
@@ -66,13 +67,14 @@ def buildIt(String name, def unstash_list = []) {
 		    sh """
 			cp ../mock_config/my-epel-7-x86_64.cfg local-mock.cfg
 			sed -i -e 's#baseurl=http://127.0.0.1:9000.*#baseurl=file://${env.WORKSPACE}/local-repo#g' local-mock.cfg
-			rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" -bs SPECS/*.spec
+			rpmbuild --define \"_topdir ${pwd()}\" --define \"dist $my_dist\" --define \"build_num $my_build\" -bs SPECS/*.spec
 			sudo mock			 \
 			--verbose			 \
 			--configdir=${pwd()}		 \
 			--root local-mock		 \
 			--rootdir=${pwd()}/root		 \
 			--define \"dist $my_dist\"	 \
+			--define \"build_num $my_build\" \
 			--resultdir ${pwd()}/mock_result \
 			SRPMS/*.src.rpm
 			"""
