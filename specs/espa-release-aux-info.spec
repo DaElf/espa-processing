@@ -5,7 +5,7 @@
 #     particular release to build an RPM for.
 
 
-%define project espa-release-info
+%define project espa-release-aux-info
 %define build_timestamp %(date +"%%Y%%m%%d%%H%%M%%S")
 
 # Change the default rpm name format for the rpm built by this spec file
@@ -16,7 +16,7 @@
 Name:		%{project}
 Version:	2.29.0
 Release:	1.%{build_timestamp}
-Summary:	ESPA Release Information
+Summary:	ESPA Aux Script Release Information
 
 Group:		ESPA
 License:	NASA Open Source Agreement
@@ -27,33 +27,22 @@ BuildArch:	noarch
 Packager:	USGS EROS LSRD
 
 # List of every RPM and what version they should be at
-Requires: espa-product-formatter == 1.16.0
-Requires: espa-l2qa-tools == 1.7.1
-Requires: espa-surface-reflectance == 1.0.13
-Requires: espa-surface-reflectance-ledaps == 3.3.0
-Requires: espa-surface-reflectance-lasrc == 1.4.0
-Requires: espa-surface-temperature == 1.0.9
-Requires: espa-surface-temperature-rit == 1.3.0
-Requires: espa-spectral-indices == 2.7.0
-Requires: espa-surface-water-extent == 1.0.7
-Requires: espa-surface-water-extent-cfbwd == 1.1.0
-Requires: espa-surface-water-extent-dswe == 2.3.0
-Requires: espa-elevation == 2.3.1
-Requires: espa-reprojection == 1.0.3
-Requires: espa-plotting == 0.1.0
+Requires: espa-surface-reflectance-ledaps-aux == 3.3.0
+Requires: espa-surface-reflectance-lasrc-aux == 1.4.1
+Requires: espa-surface-temperature-aux == 1.1.0
 
 %description
-Provides an ESPA release information file to be stored in /etc/espa-release.
+Provides an ESPA aux script release information file to be stored in /etc/espa-release-aux.
 
 # ----------------------------------------------------------------------------
 %prep
 # We don't need to perform anything here
 
 %build
-echo %{version} >espa-release
+echo %{version} >espa-release-aux
 
 %install
-install -D -m 644 espa-release %{buildroot}/etc/espa-release
+install -D -m 644 espa-release-aux %{buildroot}/etc/espa-release-aux
 
 %clean
 rm -rf %{buildroot}
@@ -61,11 +50,9 @@ rm -rf %{buildroot}
 # ----------------------------------------------------------------------------
 %files
 %defattr(-,root,root,-)
-/etc/espa-release
+/etc/espa-release-aux
 
 # ----------------------------------------------------------------------------
 %changelog
 * Mon Dec 10 2018 Sam Gould <sgould@contractor.usgs.gov>
 - RPM restructure for ESPA 2.29.0
-* Mon Nov 26 2018 Sam Gould <sgould@contractor.usgs.gov>
-- Initial Version for ESPA 2.29.0
