@@ -30,7 +30,7 @@ def untar_data(source_file, destination_directory):
 
     # If both source and destination are localhost we can just copy the data
     cmd = ' '.join(['tar', '--directory', destination_directory,
-                    '-xvf', source_file])
+                        '--use-compress-program=pigz', '-xvf', source_file])
 
     logger.info("Unpacking [%s] to [%s]"
                 % (source_file, destination_directory))
