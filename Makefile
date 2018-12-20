@@ -26,6 +26,9 @@ clean:
 espa-release-info: check-environment
 	rpmbuild -bb --clean specs/espa-release-info.spec
 
+espa-release-aux-info: check-environment
+	rpmbuild -bb --clean specs/espa-release-aux-info.spec
+
 #-----------------------------------------------------------------------------
 #-------- BASE LIBRARIES
 product-formatter: check-environment

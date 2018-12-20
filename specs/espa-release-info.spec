@@ -14,7 +14,7 @@
 
 # ----------------------------------------------------------------------------
 Name:		%{project}
-Version:	2.29.0
+Version:	2.30.0
 Release:	1.%{build_timestamp}
 Summary:	ESPA Release Information
 
@@ -27,10 +27,10 @@ BuildArch:	noarch
 Packager:	USGS EROS LSRD
 
 # List of every RPM and what version they should be at
-Requires: espa-product-formatter == 1.16.0
+Requires: espa-product-formatter == 1.16.1
 Requires: espa-l2qa-tools == 1.7.1
 Requires: espa-surface-reflectance == 1.0.13
-Requires: espa-surface-reflectance-ledaps == 3.3.0
+Requires: espa-surface-reflectance-ledaps == 3.3.1
 Requires: espa-surface-reflectance-lasrc == 1.4.0
 Requires: espa-surface-temperature == 1.0.9
 Requires: espa-surface-temperature-rit == 1.3.0
@@ -65,6 +65,8 @@ rm -rf %{buildroot}
 
 # ----------------------------------------------------------------------------
 %changelog
+* Thu Dec 20 2018 Sam Gould <sgould@contractor.usgs.gov>
+- Initial Version for ESPA 2.30.0
 * Mon Dec 10 2018 Sam Gould <sgould@contractor.usgs.gov>
 - RPM restructure for ESPA 2.29.0
 * Mon Nov 26 2018 Sam Gould <sgould@contractor.usgs.gov>

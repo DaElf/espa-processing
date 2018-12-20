@@ -14,7 +14,7 @@
 
 # ----------------------------------------------------------------------------
 Name:		%{project}
-Version:	2.29.0
+Version:	2.30.0
 Release:	1.%{build_timestamp}
 Summary:	ESPA Aux Script Release Information
 
@@ -29,7 +29,7 @@ Packager:	USGS EROS LSRD
 # List of every RPM and what version they should be at
 Requires: espa-surface-reflectance-ledaps-aux == 3.3.0
 Requires: espa-surface-reflectance-lasrc-aux == 1.4.1
-Requires: espa-surface-temperature-aux == 1.1.0
+Requires: espa-surface-temperature-aux == 1.2.0
 
 %description
 Provides an ESPA aux script release information file to be stored in /etc/espa-release-aux.
@@ -54,5 +54,7 @@ rm -rf %{buildroot}
 
 # ----------------------------------------------------------------------------
 %changelog
+* Thu Dec 20 2018 Sam Gould <sgould@contractor.usgs.gov>
+- Initial Version for ESPA 2.30.0
 * Mon Dec 10 2018 Sam Gould <sgould@contractor.usgs.gov>
 - RPM restructure for ESPA 2.29.0
