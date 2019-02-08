@@ -38,6 +38,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc
 %{_bindir}/*
 %{python_sitelib}/*
+%{_datadir}/eros_scene_processing_tools
 
 
 %changelog
