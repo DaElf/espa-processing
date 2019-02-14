@@ -1,6 +1,6 @@
 %{!?build_num:%define build_num 0}
 Name:           espa-processing
-Version:        2.27.1.b_%{build_num}
+Version:        2.30.0.b_%{build_num}
 Release:        1%{?dist}
 Summary:	ESPA processing
 
