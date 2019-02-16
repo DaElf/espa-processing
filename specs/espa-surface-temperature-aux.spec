@@ -19,7 +19,7 @@
 
 # ----------------------------------------------------------------------------
 Name:		%{project}-%{algorithm}
-Version:	1.2.0
+Version:	2.0.0
 Release:	1.%{build_timestamp}
 Summary:	ESPA Surface Temperature Software - Auxiliary
 
@@ -74,6 +74,8 @@ rm -rf %{buildroot}
 
 # ----------------------------------------------------------------------------
 %changelog
+* Fri Feb 15 2019 Sam Gould <sgould@contractor.usgs.gov>
+- Version fix for ESPA 2.30.0
 * Thu Dec 20 2018 Sam Gould <sgould@contractor.usgs.gov>
 - Initial Version for ESPA 2.30.0
 * Wed Sep 19 2018 Sam Gould <sgould@contractor.usgs.gov>
