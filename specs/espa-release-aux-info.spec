@@ -29,7 +29,7 @@ Packager:	USGS EROS LSRD
 # List of every RPM and what version they should be at
 Requires: espa-surface-reflectance-ledaps-aux == 3.3.0
 Requires: espa-surface-reflectance-lasrc-aux == 1.4.1
-Requires: espa-surface-temperature-aux == 1.2.0
+Requires: espa-surface-temperature-aux == 2.0.0
 
 %description
 Provides an ESPA aux script release information file to be stored in /etc/espa-release-aux.
