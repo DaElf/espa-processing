@@ -70,7 +70,7 @@ rm -rf %{buildroot}
 
 # ----------------------------------------------------------------------------
 %changelog
-* Fri Feb 15 2018 Sam Gould <sgould@contractor.usgs.gov>
+* Fri Feb 15 2019 Sam Gould <sgould@contractor.usgs.gov>
 - Initial Version for ESPA 2.30.0
 * Wed Sep 19 2018 Sam Gould <sgould@contractor.usgs.gov>
 - Initial Version for ESPA 2.28.0
