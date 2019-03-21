@@ -3,7 +3,7 @@
 #
 # Project Name: ESPA RPM Building
 #-----------------------------------------------------------------------------
-.PHONY: check-environment all base schemas science install clean espa-release-info product-formatter product-formatter-schemas l2qa-tools elevation reprojection spectral-indices surface-water-extent surface-water-extent-dswe surface-water-extent-cfbwd surface-reflectance surface-reflectance-ledaps surface-reflectance-ledaps-aux surface-reflectance-lasrc surface-reflectance-lasrc-aux surface-temperature surface-temperature-rit surface-temperature-aux plotting
+.PHONY: check-environment all base schemas science install clean espa-release-info espa-release-aux-info product-formatter product-formatter-schemas l2qa-tools elevation reprojection spectral-indices surface-water-extent surface-water-extent-dswe surface-water-extent-cfbwd surface-reflectance surface-reflectance-ledaps surface-reflectance-ledaps-aux surface-reflectance-lasrc surface-reflectance-lasrc-aux surface-temperature surface-temperature-rit surface-temperature-aux plotting
 
 all:
 
@@ -25,6 +25,9 @@ clean:
 #-----------------------------------------------------------------------------
 espa-release-info: check-environment
 	rpmbuild -bb --clean specs/espa-release-info.spec
+
+espa-release-aux-info: check-environment
+	rpmbuild -bb --clean specs/espa-release-aux-info.spec
 
 #-----------------------------------------------------------------------------
 #-------- BASE LIBRARIES
