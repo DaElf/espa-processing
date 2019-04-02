@@ -30,6 +30,7 @@ Requires:       python-gdal
 Requires:	python-watchtower
 Requires:	awscli
 Requires:	rsync
+Requires:	time
 
 %description
 %summary
